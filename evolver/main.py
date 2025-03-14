@@ -73,6 +73,38 @@ class EvolutionaryOptimizer:
         
         return offspring
     
+    def run_iteration(self):
+        """Run a single iteration of the evolutionary algorithm."""
+        # Select parents
+        num_pairs = max(1, self.num_parallel)
+        parents = select_parents(self.population.agents, num_pairs * 2)
+        
+        # Create parent pairs
+        parent_pairs = []
+        for i in range(0, len(parents), 2):
+            if i+1 < len(parents):
+                parent_pairs.append((parents[i], parents[i+1]))
+        
+        # Process pairs
+        with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:
+            # Submit tasks
+            future_to_pair = {
+                executor.submit(self.create_and_evaluate_offspring, pair): pair
+                for pair in parent_pairs
+            }
+            
+            # Process results
+            for future in as_completed(future_to_pair):
+                if not self.running:
+                    break
+                    
+                try:
+                    new_agent = future.result()
+                    if new_agent:
+                        self.population.add_agent(new_agent)
+                except Exception as e:
+                    print(f"Error processing offspring: {e}")
+    
     def run(self):
         # Check for input from stdin if available
         if not sys.stdin.isatty():
@@ -107,41 +139,18 @@ class EvolutionaryOptimizer:
         stats_interval = 10  # Print stats every N iterations
         iteration = 0
         
-        with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:
-            while self.running:
-                iteration += 1
-                
-                # Select parents
-                num_pairs = max(1, self.num_parallel)
-                parents = select_parents(self.population.agents, num_pairs * 2)
-                
-                # Create parent pairs
-                parent_pairs = []
-                for i in range(0, len(parents), 2):
-                    if i+1 < len(parents):
-                        parent_pairs.append((parents[i], parents[i+1]))
-                
-                # Submit tasks
-                future_to_pair = {
-                    executor.submit(self.create_and_evaluate_offspring, pair): pair
-                    for pair in parent_pairs
-                }
-                
-                # Process results
-                for future in as_completed(future_to_pair):
-                    try:
-                        new_agent = future.result()
-                        if new_agent:
-                            self.population.add_agent(new_agent)
-                    except Exception as e:
-                        print(f"Error processing offspring: {e}")
-                
-                # Print statistics periodically
-                if iteration % stats_interval == 0:
-                    self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
-                
-                # Small delay to prevent CPU hogging
-                time.sleep(0.01)
+        while self.running:
+            iteration += 1
+            
+            # Run one iteration
+            self.run_iteration()
+            
+            # Print statistics periodically
+            if iteration % stats_interval == 0:
+                self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
+            
+            # Small delay to prevent CPU hogging
+            time.sleep(0.01)
         
         # Print final statistics
         print("\n=== Final Statistics ===")

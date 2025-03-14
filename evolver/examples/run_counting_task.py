@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""
+Example script to run the evolutionary optimizer on the counting task.
+"""
+
+import os
+import sys
+import time
+from evolver.main import EvolutionaryOptimizer
+
+def main():
+    # Set up arguments
+    args = {
+        "parallel": 4,
+        "max_agents": 100,
+        "verbose": True,
+        "eval_command": "python evolver/examples/counting_task.py"
+    }
+    
+    # Create optimizer
+    optimizer = EvolutionaryOptimizer(args)
+    
+    # Initialize with some random agents
+    for i in range(5):
+        # Create agents with different initial chromosomes
+        if i == 0:
+            # One with just 'a's
+            chromosome = "a" * 5
+        elif i == 1:
+            # One with mixed characters
+            chromosome = "abcdefg"
+        elif i == 2:
+            # One with spaces
+            chromosome = "a a a a a"
+        elif i == 3:
+            # One with punctuation
+            chromosome = "a, a. a! a?"
+        else:
+            # One with a longer string
+            chromosome = "a" * 30
+            
+        # Create and evaluate agent
+        from evolver.agent import Agent
+        agent = Agent(task_chromosome=chromosome)
+        agent.score = optimizer.evaluate_agent(agent)
+        optimizer.population.add_agent(agent)
+        optimizer.statistics.update(agent)
+        
+        print(f"Initial agent: {agent}")
+    
+    # Run for a limited time (30 seconds)
+    print("\nStarting evolution...")
+    optimizer.running = True
+    end_time = time.time() + 30
+    
+    try:
+        while optimizer.running and time.time() < end_time:
+            # Run one iteration
+            optimizer.run_iteration()
+            
+            # Print stats every 5 evaluations
+            if optimizer.statistics.total_evaluations % 5 == 0:
+                optimizer.statistics.print_stats(
+                    verbose=optimizer.verbose,
+                    population_size=len(optimizer.population)
+                )
+    except KeyboardInterrupt:
+        print("\nStopped by user")
+    finally:
+        optimizer.running = False
+        
+    # Print final statistics
+    print("\n=== Final Statistics ===")
+    optimizer.statistics.print_detailed_stats(population_size=len(optimizer.population))
+    
+    # Print the best agent's chromosome
+    if optimizer.statistics.best_agent:
+        best_agent = optimizer.statistics.best_agent
+        print(f"\nBest agent score: {best_agent.score}")
+        print(f"Best agent chromosome: {best_agent.chromosomes['task']}")
+
+if __name__ == "__main__":
+    main()

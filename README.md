@@ -41,6 +41,18 @@ python -m evolver.main --load population.toml
 echo "initial chromosome" | python -m evolver.main
 ```
 
+### Running the Counting Task Example
+
+The repository includes an example "counting task" that rewards agents for maximizing the number of 'a' characters up to a certain length, with penalties for exceeding that length:
+
+```bash
+# Run the counting task example
+python evolver/examples/run_counting_task.py
+
+# Or run directly with the main module
+python -m evolver.main --eval-command "python evolver/examples/counting_task.py" --verbose
+```
+
 ## Using as a DSPy Optimizer
 
 ```python
