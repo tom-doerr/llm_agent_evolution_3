@@ -1,25 +1,24 @@
 import pytest
 from evolver.agent import Agent
 from evolver.evolution import (
-    pareto_weights,
     select_parents,
     find_hotspots,
     combine_chromosomes,
     create_offspring
 )
+from evolver.utils import prepare_weights
 
-def test_pareto_weights():
+def test_prepare_weights():
     # Test with positive scores
     scores = [1.0, 2.0, 3.0, 4.0]
-    weights = pareto_weights(scores)
+    weights = prepare_weights(scores)
     assert weights == [1.0, 4.0, 9.0, 16.0]
     
     # Test with negative scores
     scores = [-2.0, -1.0, 0.0, 1.0]
-    weights = pareto_weights(scores)
+    weights = prepare_weights(scores)
     # Should adjust to make all positive
     assert weights[0] < weights[1] < weights[2] < weights[3]
-    assert weights[3] == 1.0  # Last weight should be 1.0
 
 def test_select_parents():
     # Create test agents

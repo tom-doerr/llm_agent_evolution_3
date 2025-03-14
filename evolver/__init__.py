@@ -4,6 +4,7 @@ from .evolution import select_parents, create_offspring
 from .statistics import Statistics
 from .llm import LLMInterface
 from .main import EvolutionaryOptimizer
+from .dspy_optimizer import DSPyOptimizer
 
 __all__ = [
     'Agent',
@@ -12,5 +13,6 @@ __all__ = [
     'create_offspring',
     'Statistics',
     'LLMInterface',
-    'EvolutionaryOptimizer'
+    'EvolutionaryOptimizer',
+    'DSPyOptimizer'
 ]
