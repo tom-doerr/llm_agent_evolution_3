@@ -326,7 +326,9 @@ class Statistics:
         print(f"Scores: Mean={stats['mean']:.2f} | Median={stats['median']:.2f} | Best={stats['best']:.2f}")
         
         if self.best_agent:
-            print(f"\nBest agent output excerpt: \"{self.best_agent.chromosomes['task'][:30]}...\" (score: {self.best_agent.score:.2f})")
+            # Show the actual output (which is the chromosome in this simple case)
+            output = self.best_agent.chromosomes['task']
+            print(f"\nBest agent output excerpt: \"{output[:30]}{'...' if len(output) > 30 else ''}\" (score: {self.best_agent.score:.2f})")
         
         if verbose and self.mating_history and len(self.mating_history) > 0:
             latest = list(self.mating_history)[-1]

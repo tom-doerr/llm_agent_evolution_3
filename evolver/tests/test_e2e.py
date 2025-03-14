@@ -93,8 +93,8 @@ def test_simple_optimization():
     assert best_agent is not None, "Should have a best agent"
     assert best_agent.score > 0, "Best agent should have a positive score"
     
-    # In this simple test case, the chromosome itself is the output
-    # We're testing the score, not the specific content
+    # For this simple test, we're testing the score, not requiring specific content
+    # The agent should have been evaluated on its output, not its chromosome content
     
     # Print statistics for debugging
     print(f"Initial best score: {initial_best}, mean: {initial_mean}")

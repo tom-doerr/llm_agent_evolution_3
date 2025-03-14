@@ -79,13 +79,17 @@ def main():
     print("\n=== Final Statistics ===")
     optimizer.statistics.print_detailed_stats(population_size=len(optimizer.population))
     
-    # Print the best agent's chromosome
+    # Print the best agent's chromosome and output analysis
     if optimizer.statistics.best_agent:
         best_agent = optimizer.statistics.best_agent
+        output = best_agent.chromosomes['task']  # In this simple case, the chromosome is the output
+        
         print(f"\nBest agent score: {best_agent.score}")
-        print(f"Best agent chromosome: {best_agent.chromosomes['task']}")
-        print(f"Length: {len(best_agent.chromosomes['task'])}")
-        print(f"Number of 'a's: {best_agent.chromosomes['task'].count('a')}")
+        print(f"Best agent output: {output}")
+        print(f"Output length: {len(output)}")
+        print(f"Number of 'a's: {output.count('a')}")
+        print(f"Optimal length: {TEST_OPTIMAL_LENGTH}")
+        print(f"Penalty: {max(0, len(output) - TEST_OPTIMAL_LENGTH)}")
 
 if __name__ == "__main__":
     main()

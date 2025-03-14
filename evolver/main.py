@@ -9,7 +9,7 @@ from .agent import Agent
 from .cli import parse_args
 from .constants import DEFAULT_PARALLEL_AGENTS
 from .evolution import select_parents, create_offspring
-from .evaluation import evaluate_agent, external_command_evaluation
+from .evaluation import evaluate_agent
 from .utils import create_parent_pairs
 from .llm import LLMInterface
 from .population import Population
