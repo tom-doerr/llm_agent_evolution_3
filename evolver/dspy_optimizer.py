@@ -89,7 +89,14 @@ class DSPyOptimizer:
         while optimizer.running and evaluation_count < max_evaluations:
             # Select parents
             num_pairs = max(1, min(10, self.parallel))  # Ensure it's a reasonable integer
-            parents = optimizer.population.get_candidates(num_pairs * 2)
+            num_parents = num_pairs * 2
+            
+            # Get candidates for parents
+            if len(optimizer.population.agents) > 0:
+                parents = optimizer.population.get_candidates(num_parents)
+            else:
+                # Handle empty population case
+                break
             
             # Create parent pairs
             parent_pairs = create_parent_pairs(parents)

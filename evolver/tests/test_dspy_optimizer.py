@@ -51,7 +51,10 @@ def test_dspy_optimizer_optimize():
         mock_best_agent.chromosomes = {"task": "optimized prompt"}
         mock_optimizer.statistics.best_agent = mock_best_agent
         
-        # Mock num_parallel attribute as an integer
+        # Mock population and get_candidates method
+        mock_optimizer.population.get_candidates.return_value = []
+        
+        # Set num_parallel as an integer
         mock_optimizer.num_parallel = 5
         
         # Run optimization

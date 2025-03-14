@@ -56,8 +56,10 @@ def evaluate_agent(agent: Agent, eval_command: str = "", optimal_length: int = T
     if eval_command:
         return external_command_evaluation(agent, eval_command)
     
-    # Default evaluation using the agent's task chromosome as output
-    # TODO: In a more complex implementation, we would generate output using the task chromosome as a prompt
-    # For now, we directly evaluate the chromosome content as the output
-    output = agent.chromosomes["task"]
+    # Generate output using the task chromosome as a prompt
+    # For this simple implementation, we'll use the chromosome as both prompt and output
+    # In a more complex implementation, we would use an LLM to generate output from the prompt
+    prompt = agent.chromosomes["task"]
+    output = prompt  # In a real implementation, this would be LLM(prompt)
+    
     return evaluate_agent_output(output, optimal_length)

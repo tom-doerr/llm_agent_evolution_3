@@ -331,13 +331,20 @@ class Statistics:
         
         if self.best_agent:
             # Show the actual output (which is the chromosome in this simple case)
+            # In a real implementation, this would be the output generated from the prompt
             output = self.best_agent.chromosomes['task']
             count_a = output.count('a')
-            penalty = max(0, len(output) - 23)  # Using TEST_OPTIMAL_LENGTH
+            from evolver.constants import TEST_OPTIMAL_LENGTH
+            penalty = max(0, len(output) - TEST_OPTIMAL_LENGTH)
             
-            print(f"\nBest agent output excerpt: \"{output[:30]}{'...' if len(output) > 30 else ''}\"")
-            print(f"Score: {self.best_agent.score:.2f} ({count_a} 'a's, {penalty} char penalty)")
+            print(f"\nBest agent:")
+            print(f"  Input: <none>")
+            print(f"  Output excerpt: \"{output[:30]}{'...' if len(output) > 30 else ''}\"")
+            print(f"  Score: {self.best_agent.score:.2f} ({count_a} 'a's, {penalty} char penalty)")
         
         if verbose and self.mating_history and len(self.mating_history) > 0:
             latest = list(self.mating_history)[-1]
-            print(f"\nRecent mating: {latest['parent1_score']:.2f} + {latest['parent2_score']:.2f} → {latest['offspring_score']:.2f}")
+            print(f"\nRecent mating:")
+            print(f"  Parent 1 (Score: {latest['parent1_score']:.2f})")
+            print(f"  Parent 2 (Score: {latest['parent2_score']:.2f})")
+            print(f"  Offspring (Score: {latest['offspring_score']:.2f})")

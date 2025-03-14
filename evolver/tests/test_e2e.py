@@ -94,8 +94,9 @@ def test_simple_optimization():
     assert best_agent is not None, "Should have a best agent"
     assert best_agent.score > 0, "Best agent should have a positive score"
     
-    # For this simple test, we're testing the score, not requiring specific content
-    # The agent should have been evaluated on its output, not its chromosome content
+    # Generate and check output from the best agent
+    output = best_agent.chromosomes["task"]  # In a real implementation, this would be LLM(prompt)
+    assert len(output) > 0, "Best agent should produce non-empty output"
     
     # Print statistics for debugging
     print(f"Initial best score: {initial_best}, mean: {initial_mean}")

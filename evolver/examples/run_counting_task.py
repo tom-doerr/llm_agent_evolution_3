@@ -79,12 +79,16 @@ def main():
     print("\n=== Final Statistics ===")
     optimizer.statistics.print_detailed_stats(population_size=len(optimizer.population))
     
-    # Print the best agent's chromosome and output analysis
+    # Print the best agent's output analysis
     if optimizer.statistics.best_agent:
         best_agent = optimizer.statistics.best_agent
-        output = best_agent.chromosomes['task']  # In this simple case, the chromosome is the output
+        # In a real implementation, we would generate output from the prompt
+        # For now, we use the chromosome as both prompt and output
+        prompt = best_agent.chromosomes['task']
+        output = prompt  # This would be LLM(prompt) in a real implementation
         
         print(f"\nBest agent score: {best_agent.score}")
+        print(f"Best agent prompt: {prompt[:50]}..." if len(prompt) > 50 else prompt)
         print(f"Best agent output: {output}")
         print(f"Output length: {len(output)}")
         print(f"Number of 'a's: {output.count('a')}")
