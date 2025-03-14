@@ -1,6 +1,7 @@
 import time
-import dspy
 from typing import Optional
+
+import dspy
 
 class LLMInterface:
     def __init__(self, model_name: str = 'openrouter/google/gemini-2.0-flash-001'):
