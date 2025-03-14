@@ -69,18 +69,22 @@ class DSPyOptimizer:
             # Evaluate on training set
             total_score = 0.0
             num_examples = min(len(trainset), 10)  # Limit to 10 examples for efficiency
+            successful_examples = 0
             
             for example in trainset[:num_examples]:
                 try:
                     result = optimized_module(example)
                     score = metric(result, example)
                     total_score += score
+                    successful_examples += 1
                 except Exception as e:
                     print(f"Error evaluating module: {e}")
-                    return 0.0
+                    # Continue with other examples instead of returning 0
             
-            # Return average score
-            return total_score / num_examples if num_examples > 0 else 0.0
+            # Return average score based on successful examples
+            if successful_examples == 0:
+                return 0.0
+            return total_score / successful_examples
         
         # Override the evaluation function
         optimizer.evaluate_agent = evaluate_module
@@ -88,9 +92,24 @@ class DSPyOptimizer:
         # Initialize population with a few random agents
         for i in range(10):
             # Create initial prompts with some variation
-            initial_prompt = f"Instruction: Process the input and generate a response. Input: {{input}}"
-            if i > 0:
-                initial_prompt += f" Consider aspect {i} of the problem."
+            if i == 0:
+                # Simple instruction
+                initial_prompt = f"Instruction: Process the input and generate a response. Input: {{input}}"
+            elif i == 1:
+                # More detailed instruction
+                initial_prompt = f"Analyze the input carefully and provide a comprehensive response. Input: {{input}}"
+            elif i == 2:
+                # Focus on brevity
+                initial_prompt = f"Provide a concise and direct response to: {{input}}"
+            elif i == 3:
+                # Focus on creativity
+                initial_prompt = f"Think creatively about the following input: {{input}}"
+            elif i == 4:
+                # Focus on step-by-step reasoning
+                initial_prompt = f"Reason step-by-step about: {{input}}"
+            else:
+                # Mix of approaches
+                initial_prompt = f"Instruction: Process the input and generate a response. Consider aspect {i} of the problem. Input: {{input}}"
                 
             agent = Agent(task_chromosome=initial_prompt)
             agent.score = optimizer.evaluate_agent(agent)

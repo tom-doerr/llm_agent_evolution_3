@@ -50,20 +50,21 @@ def combine_chromosomes(parent1: Agent, parent2: Agent, chromosome_name: str) ->
         return chromosome1
     
     # Find potential crossover points (hotspots)
-    hotspots = find_hotspots(chromosome1)
+    hotspots1 = find_hotspots(chromosome1)
+    hotspots2 = find_hotspots(chromosome2)
     
     # If no hotspots found, create some arbitrary ones
-    if not hotspots:
+    if not hotspots1:
         # Create crossover points roughly every 5-10 characters
         from .utils import get_thread_rng
         rng = get_thread_rng()
         avg_segment_length = rng.randint(5, 10)
         for i in range(avg_segment_length, len(chromosome1), avg_segment_length):
             if i < len(chromosome1):
-                hotspots.append(i)
+                hotspots1.append(i)
     
     # Calculate crossover probability to achieve on average one switch per chromosome
-    crossover_probability = 1.0 / (len(hotspots) + 1) if hotspots else 0.5
+    crossover_probability = 1.0 / (len(hotspots1) + 1) if hotspots1 else 0.5
     
     # Perform crossover
     result = ""
@@ -73,22 +74,36 @@ def combine_chromosomes(parent1: Agent, parent2: Agent, chromosome_name: str) ->
     from .utils import get_thread_rng
     rng = get_thread_rng()
     
-    for pos in hotspots:
+    # Determine if we should use a different strategy based on scores
+    score_ratio = parent1.score / max(0.0001, parent2.score)
+    
+    # If one parent is significantly better, bias toward that parent
+    if score_ratio > 2.0:  # Parent1 is much better
+        bias = 0.7  # 70% chance to keep parent1's genes
+    elif score_ratio < 0.5:  # Parent2 is much better
+        bias = 0.3  # 30% chance to keep parent1's genes
+    else:
+        bias = 0.5  # Equal chance
+    
+    for pos in sorted(hotspots1):
+        if pos > len(chromosome1):
+            break
+            
         if rng.random() < crossover_probability:
-            # Switch parents at this hotspot
+            # Switch parents at this hotspot, with bias
             if current_parent == 1:
                 result += chromosome1[last_pos:pos]
-                current_parent = 2
+                current_parent = 2 if rng.random() > bias else 1
             else:
-                result += chromosome2[last_pos:pos]
-                current_parent = 1
+                result += chromosome2[last_pos:min(pos, len(chromosome2))]
+                current_parent = 1 if rng.random() > (1 - bias) else 2
             last_pos = pos
     
     # Add the remaining part from the current parent
     if current_parent == 1:
         result += chromosome1[last_pos:]
     else:
-        result += chromosome2[last_pos:]
+        result += chromosome2[last_pos:] if last_pos < len(chromosome2) else ""
     
     # Ensure the result doesn't exceed maximum length
     if len(result) > MAX_CHROMOSOME_LENGTH:

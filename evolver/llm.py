@@ -15,13 +15,23 @@ class LLMInterface:
         if not self.lm:
             self.initialize()
         
-        try:
-            response = self.lm(prompt, max_tokens=max_tokens)
-            return response
-        except Exception as e:
-            print(f"Error generating from LLM: {e}")
-            # Re-raise the exception to allow proper error handling
-            raise
+        # Try up to 3 times with exponential backoff
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = self.lm(prompt, max_tokens=max_tokens)
+                return response
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    # Exponential backoff: wait 1s, 2s, 4s, etc.
+                    import time
+                    wait_time = 2 ** attempt
+                    print(f"LLM error (attempt {attempt+1}/{max_retries}): {e}. Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Error generating from LLM after {max_retries} attempts: {e}")
+                    # Re-raise the exception to allow proper error handling
+                    raise
     
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
                                      instruction_chromosome: str, max_tokens: Optional[int] = None) -> str:

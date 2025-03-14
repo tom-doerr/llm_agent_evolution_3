@@ -7,6 +7,8 @@ import os
 import sys
 import time
 from evolver.main import EvolutionaryOptimizer
+from evolver.agent import Agent
+from evolver.constants import TEST_OPTIMAL_LENGTH
 
 def main():
     # Set up arguments
@@ -40,13 +42,19 @@ def main():
             chromosome = "a" * 30
             
         # Create and evaluate agent
-        from evolver.agent import Agent
         agent = Agent(task_chromosome=chromosome)
         agent.score = optimizer.evaluate_agent(agent)
         optimizer.population.add_agent(agent)
         optimizer.statistics.update(agent)
         
         print(f"Initial agent: {agent}")
+    
+    # Add a perfect agent to see if evolution can maintain it
+    perfect_agent = Agent(task_chromosome="a" * TEST_OPTIMAL_LENGTH)
+    perfect_agent.score = optimizer.evaluate_agent(perfect_agent)
+    optimizer.population.add_agent(perfect_agent)
+    optimizer.statistics.update(perfect_agent)
+    print(f"Perfect agent: {perfect_agent}")
     
     # Run for a limited time (30 seconds)
     print("\nStarting evolution...")
@@ -78,6 +86,8 @@ def main():
         best_agent = optimizer.statistics.best_agent
         print(f"\nBest agent score: {best_agent.score}")
         print(f"Best agent chromosome: {best_agent.chromosomes['task']}")
+        print(f"Length: {len(best_agent.chromosomes['task'])}")
+        print(f"Number of 'a's: {best_agent.chromosomes['task'].count('a')}")
 
 if __name__ == "__main__":
     main()

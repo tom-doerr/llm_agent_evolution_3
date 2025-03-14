@@ -31,6 +31,7 @@ if __name__ == "__main__":
     # Print some information about the evaluation
     print(f"Input length: {len(agent_output)}")
     print(f"Number of 'a's: {agent_output.count('a')}")
+    print(f"Penalty: {max(0, len(agent_output) - TEST_OPTIMAL_LENGTH)}")
     
     # The last line must be the score (as a float)
     print(f"{score}")
