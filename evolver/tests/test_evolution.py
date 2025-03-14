@@ -95,4 +95,4 @@ def test_create_offspring():
     assert mock_llm.combine_chromosomes_with_llm.called
     assert offspring_with_llm.chromosomes["task"] == "LLM combined result"
 
-# This test is redundant with the improved test_find_hotspots above
+# No redundant test here

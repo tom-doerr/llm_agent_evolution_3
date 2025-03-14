@@ -9,7 +9,7 @@ T = TypeVar('T')
 # Thread-local storage for thread safety
 thread_local = threading.local()
 
-def _select_weighted_item(items: List[T], weights: List[float]) -> tuple[T, int]:
+def _select_weighted_item(items: List[T], weights: List[float]) -> Tuple[T, int]:
     """Select a single item based on weights and return the item and its index."""
     total_weight = sum(weights)
     if total_weight <= 0:
