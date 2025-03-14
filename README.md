@@ -66,7 +66,8 @@ optimizer = DSPyOptimizer(
 
 # Define evaluation metric
 def metric(result, example):
-    # Calculate score
+    # Calculate score based on your requirements
+    # Higher score = better result
     return len(result)
 
 # Create training data
@@ -83,6 +84,8 @@ optimized_module = optimizer.optimize(
 
 # Use optimized module
 result = optimized_module("test")
+print(f"Result: {result}")
+print(f"Optimized prompt: {optimized_module.prompt}")
 ```
 
 ## Development
