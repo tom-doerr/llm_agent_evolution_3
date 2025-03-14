@@ -25,21 +25,7 @@ def test_dspy_optimizer_initialization():
     assert optimizer.parallel == 5
     assert optimizer.verbose is True
 
-@patch('evolver.main.EvolutionaryOptimizer')
-def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
-    # Create mock objects
-    mock_optimizer = MagicMock()
-    mock_evolutionary_optimizer.return_value = mock_optimizer
-    
-    # Mock population and statistics
-    mock_optimizer.population = MagicMock()
-    mock_optimizer.statistics = MagicMock()
-    
-    # Mock best agent
-    mock_best_agent = MagicMock()
-    mock_best_agent.chromosomes = {"task": "optimized prompt"}
-    mock_optimizer.statistics.best_agent = mock_best_agent
-    
+def test_dspy_optimizer_optimize():
     # Create optimizer and test module
     optimizer = DSPyOptimizer(max_agents=100, parallel=5)
     module = SimpleTestModule()
@@ -50,16 +36,31 @@ def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
     
     trainset = ["test1", "test2", "test3"]
     
-    # Run optimization
-    optimized_module = optimizer.optimize(
-        module=module,
-        metric=metric,
-        trainset=trainset,
-        max_evaluations=10
-    )
-    
-    # Check if EvolutionaryOptimizer was created with correct args
-    mock_evolutionary_optimizer.assert_called_once()
+    # Use a very small number of evaluations for testing
+    with patch('evolver.dspy_optimizer.EvolutionaryOptimizer') as mock_evolutionary_optimizer:
+        # Create mock objects
+        mock_optimizer = MagicMock()
+        mock_evolutionary_optimizer.return_value = mock_optimizer
+        
+        # Mock population and statistics
+        mock_optimizer.population = MagicMock()
+        mock_optimizer.statistics = MagicMock()
+        
+        # Mock best agent
+        mock_best_agent = MagicMock()
+        mock_best_agent.chromosomes = {"task": "optimized prompt"}
+        mock_optimizer.statistics.best_agent = mock_best_agent
+        
+        # Run optimization
+        optimized_module = optimizer.optimize(
+            module=module,
+            metric=metric,
+            trainset=trainset,
+            max_evaluations=10
+        )
+        
+        # Check if EvolutionaryOptimizer was created with correct args
+        mock_evolutionary_optimizer.assert_called_once()
     args = mock_evolutionary_optimizer.call_args[0][0]
     assert args["max_agents"] == 100
     assert args["parallel"] == 5

@@ -79,12 +79,20 @@ class EvolutionaryOptimizer:
         """Run a single iteration of the evolutionary algorithm."""
         # Select parents
         num_pairs = max(1, self.num_parallel)
-        parents = select_parents(self.population.agents, num_pairs * 2)
+        parents = self._select_parents_for_iteration(num_pairs * 2)
         
         # Create parent pairs
         parent_pairs = create_parent_pairs(parents)
         
         # Process pairs
+        self._process_parent_pairs(parent_pairs)
+    
+    def _select_parents_for_iteration(self, num_parents):
+        """Select parents for the current iteration."""
+        return select_parents(self.population.agents, num_parents)
+    
+    def _process_parent_pairs(self, parent_pairs):
+        """Process parent pairs in parallel to create offspring."""
         with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:
             # Submit tasks
             future_to_pair = {

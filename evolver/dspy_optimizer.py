@@ -64,10 +64,17 @@ class DSPyOptimizer:
         
         optimizer = EvolutionaryOptimizer(args)
         
+        # Set up the evaluation function
+        optimizer.evaluate_agent = self._create_evaluation_function(
+            optimized_module, metric, trainset
+        )
+        
+    def _create_evaluation_function(self, module, metric, trainset):
+        """Create an evaluation function for the DSPy module."""
         def evaluate_module(agent: Agent) -> float:
             """Evaluate a DSPy module using the agent's task chromosome as prompt."""
             # Apply the agent's task chromosome as the module's prompt
-            optimized_module.prompt = agent.chromosomes["task"]
+            module.prompt = agent.chromosomes["task"]
             
             # Evaluate on training set
             total_score = 0.0
@@ -76,21 +83,23 @@ class DSPyOptimizer:
             
             for example in trainset[:num_examples]:
                 try:
-                    result = optimized_module(example)
+                    result = module(example)
                     score = metric(result, example)
                     total_score += score
                     successful_examples += 1
-                except Exception as error:
+                except (ValueError, TypeError) as error:
                     print(f"Error evaluating module: {error}")
                     # Continue with other examples instead of returning 0
+                except Exception as error:
+                    print(f"Unexpected error evaluating module: {error}")
+                    # Continue with other examples
             
             # Return average score based on successful examples
             if successful_examples == 0:
                 return 0.0
             return total_score / successful_examples
         
-        # Override the evaluation function
-        optimizer.evaluate_agent = evaluate_module
+        return evaluate_module
         
         # Initialize population with a few random agents
         for i in range(10):

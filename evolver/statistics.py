@@ -231,10 +231,66 @@ class Statistics:
         # Print basic stats first
         self.print_stats(verbose=True, population_size=population_size)
         
+        # Print details for best, worst, and median agents
+        self._print_agent_details(self.best_agent, "Best")
+        self._print_agent_details(self.worst_agent, "Worst")
+        self._print_agent_details(self._get_median_agent(), "Median")
+        
         if RICH_AVAILABLE:
             self._print_detailed_stats_rich()
         else:
             self._print_detailed_stats_plain()
+    
+    def _get_median_agent(self) -> Optional[Agent]:
+        """Get the agent with the median score."""
+        with self._lock:
+            if not self.scores or not self.agents:
+                return None
+            
+            # Find the median score
+            median_score = self.get_median()
+            
+            # Find the agent closest to the median score
+            closest_agent = None
+            closest_distance = float('inf')
+            
+            for agent in self.agents:
+                distance = abs(agent.score - median_score)
+                if distance < closest_distance:
+                    closest_agent = agent
+                    closest_distance = distance
+            
+            return closest_agent
+    
+    def _print_agent_details(self, agent: Optional[Agent], label: str) -> None:
+        """Print details for a specific agent."""
+        if not agent:
+            return
+            
+        if RICH_AVAILABLE:
+            console = Console()
+            table = Table(title=f"{label} Agent Details")
+            table.add_column("Property", style="cyan")
+            table.add_column("Value", style="green")
+            
+            table.add_row("ID", agent.id)
+            table.add_row("Score", f"{agent.score:.4f}")
+            table.add_row("Task chromosome length", str(len(agent.chromosomes['task'])))
+            
+            console.print(table)
+            
+            console.print(Panel(
+                agent.chromosomes['task'][:500] + 
+                ("..." if len(agent.chromosomes['task']) > 500 else ""),
+                title=f"{label} Task Chromosome",
+                border_style="green"
+            ))
+        else:
+            print(f"\n--- {label} Agent Details ---")
+            print(f"ID: {agent.id}")
+            print(f"Score: {agent.score:.4f}")
+            print(f"Task chromosome length: {len(agent.chromosomes['task'])}")
+            print(f"Task chromosome: {agent.chromosomes['task'][:100]}...")
     
     def _print_best_agent_details_rich(self, console: 'Console') -> None:
         # Print detailed best agent info with Rich
@@ -273,8 +329,10 @@ class Statistics:
     def _print_detailed_stats_rich(self) -> None:
         # Print detailed stats with Rich
         console = Console()
-        self._print_best_agent_details_rich(console)
-        self._print_chromosomes_rich(console)
+        
+        # Print mating history
+        if self.mating_history:
+            self._print_mating_history_rich(console)
     
     def _print_detailed_stats_plain(self) -> None:
         # Print detailed stats in plain text

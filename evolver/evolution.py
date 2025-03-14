@@ -152,19 +152,32 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
             text=True
         )
         
-        stdout, _ = process.communicate(input=agent_output)
+        stdout, stderr = process.communicate(input=agent_output)
+        
+        # Check for process errors
+        if process.returncode != 0:
+            print(f"Command failed with exit code {process.returncode}: {stderr}")
+            return 0.0
         
         # Extract score from the last line of output
-        lines = stdout.strip().split('\n')
-        if lines:
-            try:
-                score = float(lines[-1])
-                return score
-            except ValueError:
-                # If last line isn't a valid float, return 0
-                return 0.0
-        
+        return _parse_command_output(stdout)
+    except subprocess.SubprocessError as error:
+        print(f"Subprocess error in external evaluation: {error}")
         return 0.0
     except Exception as error:
-        print(f"Error in external evaluation: {error}")
+        print(f"Unexpected error in external evaluation: {error}")
+        return 0.0
+
+def _parse_command_output(stdout: str) -> float:
+    """Parse the command output to extract the score."""
+    lines = stdout.strip().split('\n')
+    if not lines:
+        return 0.0
+        
+    try:
+        score = float(lines[-1])
+        return score
+    except ValueError:
+        # If last line isn't a valid float, return 0
+        print(f"Invalid score format in command output: {lines[-1]}")
         return 0.0
