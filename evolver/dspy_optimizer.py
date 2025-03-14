@@ -70,26 +70,12 @@ class DSPyOptimizer:
         )
         
         # Initialize population with a few random agents
+        # Start with empty prompts and let evolution discover good ones
         for i in range(10):
-            # Create initial prompts with some variation
-            if i == 0:
-                # Simple instruction
-                initial_prompt = f"Instruction: Process the input and generate a response. Input: {{input}}"
-            elif i == 1:
-                # More detailed instruction
-                initial_prompt = f"Analyze the input carefully and provide a comprehensive response. Input: {{input}}"
-            elif i == 2:
-                # Focus on brevity
-                initial_prompt = f"Provide a concise and direct response to: {{input}}"
-            elif i == 3:
-                # Focus on creativity
-                initial_prompt = f"Think creatively about the following input: {{input}}"
-            elif i == 4:
-                # Focus on step-by-step reasoning
-                initial_prompt = f"Reason step-by-step about: {{input}}"
-            else:
-                # Mix of approaches
-                initial_prompt = f"Instruction: Process the input and generate a response. Consider aspect {i} of the problem. Input: {{input}}"
+            # Create initial prompts with minimal guidance
+            initial_prompt = ""
+            if i > 0:  # Add some minimal variation after the first agent
+                initial_prompt = f"Input: {{input}}"
                 
             agent = Agent(task_chromosome=initial_prompt)
             agent.score = optimizer.evaluate_agent(agent)

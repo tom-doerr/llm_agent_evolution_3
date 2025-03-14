@@ -6,6 +6,7 @@ from .llm import LLMInterface
 from .main import EvolutionaryOptimizer
 from .dspy_optimizer import DSPyOptimizer
 from .evaluation import evaluate_agent, evaluate_agent_output
+from .error_handling import handle_errors
 
 __all__ = [
     'Agent',
@@ -17,5 +18,6 @@ __all__ = [
     'EvolutionaryOptimizer',
     'DSPyOptimizer',
     'evaluate_agent',
-    'evaluate_agent_output'
+    'evaluate_agent_output',
+    'handle_errors'
 ]

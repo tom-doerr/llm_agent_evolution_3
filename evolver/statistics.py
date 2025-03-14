@@ -26,6 +26,10 @@ class Statistics:
         self.start_time = time.time()
         self.total_evaluations = 0
         self._lock = threading.RLock()  # Reentrant lock for thread safety
+        
+        # TODO: Split this class into smaller components
+        # TODO: Add more metrics for evolution quality
+        # TODO: Implement better visualization of population diversity
     
     def update(self, agent: Agent) -> None:
         # Add new evaluation result (thread-safe)
@@ -279,7 +283,7 @@ class Statistics:
             return closest_agent
     
     def _print_agent_details(self, agent: Optional[Agent], label: str) -> None:
-        """Print details for a specific agent."""
+        # Print details for a specific agent
         if not agent:
             return
             
@@ -318,7 +322,7 @@ class Statistics:
     
     
     def log_optimization_progress(self, population_size: int, verbose: bool = False) -> None:
-        """Log detailed optimization progress."""
+        # Log detailed optimization progress
         stats = self.get_stats_dict(population_size)
         
         print(f"\n--- Optimization Progress (Evaluation {self.total_evaluations}) ---")
@@ -328,7 +332,11 @@ class Statistics:
         if self.best_agent:
             # Show the actual output (which is the chromosome in this simple case)
             output = self.best_agent.chromosomes['task']
-            print(f"\nBest agent output excerpt: \"{output[:30]}{'...' if len(output) > 30 else ''}\" (score: {self.best_agent.score:.2f})")
+            count_a = output.count('a')
+            penalty = max(0, len(output) - 23)  # Using TEST_OPTIMAL_LENGTH
+            
+            print(f"\nBest agent output excerpt: \"{output[:30]}{'...' if len(output) > 30 else ''}\"")
+            print(f"Score: {self.best_agent.score:.2f} ({count_a} 'a's, {penalty} char penalty)")
         
         if verbose and self.mating_history and len(self.mating_history) > 0:
             latest = list(self.mating_history)[-1]

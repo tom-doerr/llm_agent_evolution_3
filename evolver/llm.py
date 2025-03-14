@@ -21,7 +21,7 @@ class LLMInterface:
                 raise
     
     def generate(self, prompt: str, max_tokens: Optional[int] = None) -> str:
-        """Generate text based on prompt."""
+        # Generate text based on prompt
         if not self.lm:
             self.initialize()
         
@@ -49,28 +49,33 @@ class LLMInterface:
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
                                      instruction_chromosome: str, max_tokens: Optional[int] = None) -> str:
         # Use LLM to combine chromosomes based on instruction
+        # Handle empty inputs
         if not parent1_chromosome and not parent2_chromosome:
             return ""
-        
         if not parent1_chromosome:
             return parent2_chromosome
-        
         if not parent2_chromosome:
             return parent1_chromosome
         
-        # Default instruction if none provided
-        if not instruction_chromosome:
-            instruction_chromosome = "Combine these two inputs in a creative way."
+        # Use default instruction if none provided
+        instruction = instruction_chromosome or "Combine these two inputs in a creative way."
         
         # Create a prompt that combines the instruction and both parent chromosomes
+        # Limit input length to prevent token overflow
         prompt = (
-            f"{instruction_chromosome}\n\n"
-            f"Input 1:\n{parent1_chromosome[:1000]}\n\n"  # Limit input length
-            f"Input 2:\n{parent2_chromosome[:1000]}"      # Limit input length
+            f"{instruction}\n\n"
+            f"Input 1:\n{parent1_chromosome[:1000]}\n\n"
+            f"Input 2:\n{parent2_chromosome[:1000]}"
         )
         
+        # Generate combined result
         result = self.generate(prompt, max_tokens=max_tokens)
+        
+        # Fallback if generation failed
         if not result:
-            # If generation failed, return a simple combination
-            return f"{parent1_chromosome[:min(len(parent1_chromosome), 100)]} {parent2_chromosome[:min(len(parent2_chromosome), 100)]}"
+            # Simple concatenation with limited length
+            p1_len = min(len(parent1_chromosome), 100)
+            p2_len = min(len(parent2_chromosome), 100)
+            return f"{parent1_chromosome[:p1_len]} {parent2_chromosome[:p2_len]}"
+            
         return result

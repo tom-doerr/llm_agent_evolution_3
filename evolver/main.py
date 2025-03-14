@@ -28,6 +28,10 @@ class EvolutionaryOptimizer:
         self.num_parallel = args.get("parallel", DEFAULT_PARALLEL_AGENTS)
         self._shutdown_lock = threading.Lock()
         
+        # TODO: Reduce number of instance attributes
+        # TODO: Add validation for arguments
+        # TODO: Implement more efficient thread management
+        
         # Set up signal handler for graceful exit
         signal.signal(signal.SIGINT, self.handle_interrupt)
     
@@ -119,8 +123,22 @@ class EvolutionaryOptimizer:
     def _initialize_population(self):
         # Initialize population with a few random agents if empty
         if len(self.population) == 0:
-            for i in range(10):
-                agent = Agent(task_chromosome="a" * ((i % 5) + 1))
+            # Create diverse initial agents
+            initial_chromosomes = [
+                "a",                  # Single character
+                "aa",                 # Two characters
+                "aaa",                # Three characters
+                "aaaa",               # Four characters
+                "aaaaa",              # Five characters
+                "a a a",              # With spaces
+                "a, a",               # With punctuation
+                "ab cd",              # Mixed characters
+                "a" * 10,             # Longer string
+                "a" * 20              # Even longer string
+            ]
+            
+            for chromosome in initial_chromosomes:
+                agent = Agent(task_chromosome=chromosome)
                 agent.score = self.evaluate_agent(agent)
                 self.population.add_agent(agent)
                 self.statistics.update(agent)

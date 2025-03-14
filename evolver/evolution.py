@@ -136,6 +136,10 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
         # Fallback to standard combination if LLM not available
         new_agent.chromosomes["task"] = combine_chromosomes(parent1, parent2, "task")
     
+    # TODO: Add more chromosome types for different aspects of agent behavior
+    # TODO: Implement more sophisticated crossover strategies
+    # TODO: Add mutation rate as an evolvable parameter
+    
     return new_agent
 
 # External command evaluation moved to evaluation.py
