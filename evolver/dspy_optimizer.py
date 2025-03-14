@@ -69,6 +69,73 @@ class DSPyOptimizer:
             optimized_module, metric, trainset
         )
         
+        # Initialize population with a few random agents
+        for i in range(10):
+            # Create initial prompts with some variation
+            if i == 0:
+                # Simple instruction
+                initial_prompt = f"Instruction: Process the input and generate a response. Input: {{input}}"
+            elif i == 1:
+                # More detailed instruction
+                initial_prompt = f"Analyze the input carefully and provide a comprehensive response. Input: {{input}}"
+            elif i == 2:
+                # Focus on brevity
+                initial_prompt = f"Provide a concise and direct response to: {{input}}"
+            elif i == 3:
+                # Focus on creativity
+                initial_prompt = f"Think creatively about the following input: {{input}}"
+            elif i == 4:
+                # Focus on step-by-step reasoning
+                initial_prompt = f"Reason step-by-step about: {{input}}"
+            else:
+                # Mix of approaches
+                initial_prompt = f"Instruction: Process the input and generate a response. Consider aspect {i} of the problem. Input: {{input}}"
+                
+            agent = Agent(task_chromosome=initial_prompt)
+            agent.score = optimizer.evaluate_agent(agent)
+            optimizer.population.add_agent(agent)
+            optimizer.statistics.update(agent)
+        
+        # Run optimization for a limited number of evaluations
+        optimizer.running = True
+        evaluation_count = 0
+        
+        while optimizer.running and evaluation_count < max_evaluations:
+            # Select parents
+            num_pairs = max(1, optimizer.num_parallel)
+            parents = optimizer.population.get_candidates(num_pairs * 2)
+            
+            # Create parent pairs
+            parent_pairs = create_parent_pairs(parents)
+            
+            # Create and evaluate offspring
+            for pair in parent_pairs:
+                offspring = optimizer.create_and_evaluate_offspring(pair)
+                if offspring:
+                    optimizer.population.add_agent(offspring)
+                    evaluation_count += 1
+                
+                if evaluation_count >= max_evaluations:
+                    break
+            
+            # Print statistics periodically
+            if evaluation_count % 10 == 0:
+                optimizer.statistics.print_stats(
+                    verbose=optimizer.verbose, 
+                    population_size=len(optimizer.population)
+                )
+        
+        # Get the best agent and apply its chromosome to the module
+        best_agent = optimizer.statistics.best_agent
+        if best_agent:
+            optimized_module.prompt = best_agent.chromosomes["task"]
+            
+            # Print final best prompt if verbose
+            if optimizer.verbose:
+                print(f"\nOptimized prompt:\n{optimized_module.prompt}\n")
+        
+        return optimized_module
+        
     def _create_evaluation_function(self, module, metric, trainset):
         """Create an evaluation function for the DSPy module."""
         def evaluate_module(agent: Agent) -> float:

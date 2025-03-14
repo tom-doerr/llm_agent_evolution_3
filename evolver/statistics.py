@@ -244,7 +244,7 @@ class Statistics:
     def _get_median_agent(self) -> Optional[Agent]:
         """Get the agent with the median score."""
         with self._lock:
-            if not self.scores or not self.agents:
+            if not self.scores:
                 return None
             
             # Find the median score

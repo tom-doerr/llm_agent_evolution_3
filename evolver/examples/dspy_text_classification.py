@@ -31,10 +31,9 @@ class TextClassifier(dspy.Module):
         response = str(response).strip().lower()
         if "positive" in response:
             return "positive"
-        elif "negative" in response:
+        if "negative" in response:
             return "negative"
-        else:
-            return response
+        return response
 
 # Define evaluation metric
 def metric(result, example):

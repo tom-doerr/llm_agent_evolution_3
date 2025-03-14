@@ -68,6 +68,7 @@ def test_simple_optimization():
     
     # Record initial statistics
     initial_best = optimizer.statistics.best_agent.score if optimizer.statistics.best_agent else 0
+    initial_mean = optimizer.statistics.get_mean()
     
     # Add a better agent to ensure improvement
     better_agent = Agent(task_chromosome="a" * 10)
@@ -79,6 +80,7 @@ def test_simple_optimization():
     
     # Check if optimization improved scores
     final_best = optimizer.statistics.best_agent.score if optimizer.statistics.best_agent else 0
+    final_mean = optimizer.statistics.get_mean()
     
     # The final best score should be at least as good as the initial best
     assert final_best >= initial_best, "Final best score should be at least as good as initial best"

@@ -6,6 +6,8 @@ Example script to run the evolutionary optimizer on the counting task.
 import os
 import sys
 import time
+
+# Import evolver modules
 from evolver.main import EvolutionaryOptimizer
 from evolver.agent import Agent
 from evolver.constants import TEST_OPTIMAL_LENGTH

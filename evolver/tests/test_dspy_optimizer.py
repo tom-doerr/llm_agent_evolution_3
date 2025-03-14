@@ -58,10 +58,10 @@ def test_dspy_optimizer_optimize():
             trainset=trainset,
             max_evaluations=10
         )
-        
+    
         # Check if EvolutionaryOptimizer was created with correct args
         mock_evolutionary_optimizer.assert_called_once()
-    args = mock_evolutionary_optimizer.call_args[0][0]
+        args = mock_evolutionary_optimizer.call_args[0][0]
     assert args["max_agents"] == 100
     assert args["parallel"] == 5
     
