@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
-"""
-Example script for the counting task.
-This script takes agent output as input and returns a score.
-
-The hidden goal is to maximize the number of 'a' characters up to 
-TEST_OPTIMAL_LENGTH (23) characters, with a penalty for each character beyond that.
-"""
+# Example script for the counting task.
+# This script takes agent output as input and returns a score.
+#
+# The hidden goal is to maximize the number of 'a' characters up to 
+# TEST_OPTIMAL_LENGTH (23) characters, with a penalty for each character beyond that.
 
 import sys
 from evolver.constants import TEST_OPTIMAL_LENGTH
 
 def evaluate_output(text):
-    """
-    Evaluate the agent output:
-    - Count the number of 'a' characters (reward)
-    - Apply penalty for length beyond optimal
-    """
+    # Evaluate the agent output:
+    # - Count the number of 'a' characters (reward)
+    # - Apply penalty for length beyond optimal
     count_a = text.count('a')
     penalty = max(0, len(text) - TEST_OPTIMAL_LENGTH)
     score = count_a - penalty

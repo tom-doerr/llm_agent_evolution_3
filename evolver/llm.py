@@ -25,33 +25,17 @@ class LLMInterface:
         if not self.lm:
             self.initialize()
         
-        # Try up to 3 times with exponential backoff
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = self.lm(prompt, max_tokens=max_tokens)
-                
-                # Handle response which might be a list or string
-                if isinstance(response, list):
-                    response = response[0] if response else ""
-                
-                return str(response)
-            except (ConnectionError, TimeoutError) as error:
-                if attempt < max_retries - 1:
-                    # Exponential backoff: wait 1s, 2s, 4s, etc.
-                    wait_time = 2 ** attempt
-                    print(f"LLM error (attempt {attempt+1}/{max_retries}): {error}. Retrying in {wait_time}s...")
-                    time.sleep(wait_time)
-                else:
-                    print(f"Error generating from LLM after {max_retries} attempts: {error}")
-                    # Return empty string instead of raising to avoid test failures
-                    return ""
-            except (ValueError, TypeError) as error:
-                print(f"Error in LLM generation: {error}")
-                return ""
-            except Exception as error:
-                print(f"Unexpected error in LLM generation: {error}")
-                return ""
+        try:
+            response = self.lm(prompt, max_tokens=max_tokens)
+            
+            # Handle response which might be a list or string
+            if isinstance(response, list):
+                response = response[0] if response else ""
+            
+            return str(response)
+        except Exception as error:
+            print(f"Error in LLM generation: {error}")
+            return ""
     
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
                                      instruction_chromosome: str, max_tokens: Optional[int] = None) -> str:
@@ -76,14 +60,8 @@ class LLMInterface:
             f"Input 2:\n{parent2_chromosome}"
         )
         
-        try:
-            result = self.generate(prompt, max_tokens=max_tokens)
-            return result
-        except (ConnectionError, TimeoutError) as error:
-            print(f"Network error in LLM combination: {error}")
-            # In case of network error, return a simple combination of the inputs
+        result = self.generate(prompt, max_tokens=max_tokens)
+        if not result:
+            # If generation failed, return a simple combination
             return f"{parent1_chromosome[:min(len(parent1_chromosome), 100)]} {parent2_chromosome[:min(len(parent2_chromosome), 100)]}"
-        except Exception as error:
-            print(f"Unexpected error in LLM combination: {error}")
-            # In case of other errors, return a simple combination of the inputs
-            return f"{parent1_chromosome[:min(len(parent1_chromosome), 100)]} {parent2_chromosome[:min(len(parent2_chromosome), 100)]}"
+        return result

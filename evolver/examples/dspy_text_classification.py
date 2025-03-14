@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Example script to run the DSPyOptimizer on a text classification task.
-"""
+# Example script to run the DSPyOptimizer on a text classification task
 
 import os
 import sys
@@ -42,6 +40,40 @@ def metric(result, example):
         return 1.0
     return 0.0
 
+def run_optimization(module, metric, trainset, testset=None, max_evaluations=20):
+    # Create optimizer
+    optimizer = DSPyOptimizer(
+        max_agents=20,  # Small population for demo
+        parallel=2,     # Few parallel agents for demo
+        verbose=True
+    )
+    
+    print("Starting optimization...")
+    
+    # Optimize module
+    optimized_module = optimizer.optimize(
+        module=module,
+        metric=metric,
+        trainset=trainset,
+        max_evaluations=max_evaluations
+    )
+    
+    # Evaluate on test set if provided
+    if testset:
+        print("\nEvaluating on test set:")
+        correct = 0
+        for example in testset:
+            prediction = optimized_module(example["text"])
+            is_correct = prediction == example["label"]
+            correct += int(is_correct)
+            print(f"Text: {example['text']}")
+            print(f"Prediction: {prediction}, Actual: {example['label']}, Correct: {is_correct}")
+        
+        print(f"\nTest accuracy: {correct / len(testset) * 100:.1f}%")
+    
+    print(f"Optimized prompt: {optimized_module.prompt}")
+    return optimized_module
+
 def main():
     # Create simple training data
     trainset = [
@@ -58,38 +90,11 @@ def main():
         {"text": "Don't waste your money on this.", "label": "negative"}
     ]
     
-    # Create optimizer
-    optimizer = DSPyOptimizer(
-        max_agents=20,  # Small population for demo
-        parallel=2,     # Few parallel agents for demo
-        verbose=True
-    )
-    
     # Create module
     module = TextClassifier()
     
-    print("Starting optimization...")
-    
-    # Optimize module
-    optimized_module = optimizer.optimize(
-        module=module,
-        metric=metric,
-        trainset=trainset,
-        max_evaluations=20  # Few evaluations for demo
-    )
-    
-    # Evaluate on test set
-    print("\nEvaluating on test set:")
-    correct = 0
-    for example in testset:
-        prediction = optimized_module(example["text"])
-        is_correct = prediction == example["label"]
-        correct += int(is_correct)
-        print(f"Text: {example['text']}")
-        print(f"Prediction: {prediction}, Actual: {example['label']}, Correct: {is_correct}")
-    
-    print(f"\nTest accuracy: {correct / len(testset) * 100:.1f}%")
-    print(f"Optimized prompt: {optimized_module.prompt}")
+    # Run optimization
+    run_optimization(module, metric, trainset, testset)
 
 if __name__ == "__main__":
     main()

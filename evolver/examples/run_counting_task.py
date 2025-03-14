@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Example script to run the evolutionary optimizer on the counting task.
-"""
+# Example script to run the evolutionary optimizer on the counting task
 
 import time
 

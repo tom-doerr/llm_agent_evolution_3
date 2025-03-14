@@ -154,6 +154,13 @@ class EvolutionaryOptimizer:
         
         print(f"Starting evolution with {self.num_parallel} parallel agents")
         
+        # Run the evolution loop
+        self._run_evolution_loop()
+        
+        # Print final statistics and save if needed
+        self._finalize_run()
+    
+    def _run_evolution_loop(self):
         # Main evolution loop
         stats_interval = 10  # Print stats every N iterations
         iteration = 0
@@ -170,21 +177,17 @@ class EvolutionaryOptimizer:
             
             # Small delay to prevent CPU hogging
             time.sleep(0.01)
-        
+    
+    def _finalize_run(self):
         # Print final statistics
         print("\n=== Final Statistics ===")
         self.statistics.print_detailed_stats(population_size=len(self.population))
         
         # Save best agent if specified
         if self.args.get("save"):
-            try:
-                best_agent = self.statistics.best_agent
-                if best_agent:
-                    filename = self.args["save"]
-                    self.population.save(filename)
-                    print(f"Saved population to {filename}")
-            except Exception as error:
-                print(f"Error saving population: {error}")
+            filename = self.args["save"]
+            self.population.save(filename)
+            print(f"Saved population to {filename}")
 
 def main():
     # Parse command line arguments

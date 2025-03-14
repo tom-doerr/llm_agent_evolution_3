@@ -236,6 +236,11 @@ class Statistics:
         self._print_agent_details(self.worst_agent, "Worst")
         self._print_agent_details(self._get_median_agent(), "Median")
         
+        # Print additional details based on available libraries
+        self._print_additional_details()
+    
+    def _print_additional_details(self):
+        # Print additional details based on available libraries
         if RICH_AVAILABLE:
             self._print_detailed_stats_rich()
         else:

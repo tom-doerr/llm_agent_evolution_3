@@ -159,19 +159,13 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
         
         # Check for process errors
         if process.returncode != 0:
-            print(f"Command failed with exit code {process.returncode}: {stderr}")
+            print(f"Command failed with exit code {process.returncode}")
             return 0.0
         
         # Extract score from the last line of output
         return _parse_command_output(stdout)
-    except subprocess.SubprocessError as error:
-        print(f"Subprocess error in external evaluation: {error}")
-        return 0.0
-    except (ValueError, TypeError) as error:
-        print(f"Error parsing evaluation result: {error}")
-        return 0.0
     except Exception as error:
-        print(f"Unexpected error in external evaluation: {error}")
+        print(f"Error in external evaluation: {error}")
         return 0.0
 
 def _parse_command_output(stdout: str) -> float:
