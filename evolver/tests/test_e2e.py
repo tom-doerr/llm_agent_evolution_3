@@ -1,8 +1,6 @@
 import pytest
-import time
 from evolver.agent import Agent
-from evolver.population import Population
-from evolver.evolution import select_parents, create_offspring
+from evolver.evolution import select_parents, create_offspring, create_parent_pairs
 from evolver.main import EvolutionaryOptimizer
 from evolver.constants import TEST_OPTIMAL_LENGTH
 
@@ -43,10 +41,7 @@ def test_simple_optimization():
             parents = select_parents(optimizer.population.agents, 4)
             
             # Create parent pairs
-            parent_pairs = []
-            for i in range(0, len(parents), 2):
-                if i+1 < len(parents):
-                    parent_pairs.append((parents[i], parents[i+1]))
+            parent_pairs = create_parent_pairs(parents)
             
             # Create and evaluate offspring
             for pair in parent_pairs:

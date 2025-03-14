@@ -1,5 +1,5 @@
 import dspy
-from typing import List, Callable, Any, Optional
+from typing import List, Tuple, Callable, Any, Optional
 from .agent import Agent
 from .main import EvolutionaryOptimizer
 
@@ -26,6 +26,14 @@ class DSPyOptimizer:
         self.max_agents = max_agents
         self.parallel = parallel
         self.verbose = verbose
+    
+    def _create_parent_pairs(self, parents: List[Agent]) -> List[Tuple[Agent, Agent]]:
+        """Create pairs of parents for mating."""
+        parent_pairs = []
+        for i in range(0, len(parents), 2):
+            if i+1 < len(parents):
+                parent_pairs.append((parents[i], parents[i+1]))
+        return parent_pairs
     
     def optimize(self, 
                  module: dspy.Module,
@@ -126,10 +134,7 @@ class DSPyOptimizer:
             parents = optimizer.population.get_candidates(num_pairs * 2)
             
             # Create parent pairs
-            parent_pairs = []
-            for i in range(0, len(parents), 2):
-                if i+1 < len(parents):
-                    parent_pairs.append((parents[i], parents[i+1]))
+            parent_pairs = self._create_parent_pairs(parents)
             
             # Create and evaluate offspring
             for pair in parent_pairs:

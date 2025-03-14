@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock, patch
 import dspy
 from evolver.dspy_optimizer import DSPyOptimizer
@@ -18,13 +17,13 @@ def test_dspy_optimizer_initialization():
     optimizer = DSPyOptimizer()
     assert optimizer.max_agents == 1_000_000
     assert optimizer.parallel == 10
-    assert optimizer.verbose == False
+    assert optimizer.verbose is False
     
     # Test custom initialization
     optimizer = DSPyOptimizer(max_agents=100, parallel=5, verbose=True)
     assert optimizer.max_agents == 100
     assert optimizer.parallel == 5
-    assert optimizer.verbose == True
+    assert optimizer.verbose is True
 
 @patch('evolver.main.EvolutionaryOptimizer')
 def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
@@ -42,7 +41,7 @@ def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
     module = TestModule()
     
     # Define simple metric and dataset
-    def metric(result, example):
+    def metric(result, _):
         return len(result)
     
     trainset = ["test1", "test2", "test3"]

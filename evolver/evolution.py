@@ -1,6 +1,16 @@
 import string
 import subprocess
-from typing import List, Tuple, Optional, Callable
+from typing import List, Tuple, Optional, Callable, TypeVar
+
+T = TypeVar('T')
+
+def create_parent_pairs(parents: List[T]) -> List[Tuple[T, T]]:
+    """Create pairs of parents for mating."""
+    parent_pairs = []
+    for i in range(0, len(parents), 2):
+        if i+1 < len(parents):
+            parent_pairs.append((parents[i], parents[i+1]))
+    return parent_pairs
 import math
 
 from .agent import Agent

@@ -49,7 +49,7 @@ def test_llm_generate_error(mock_lm_class):
     with pytest.raises(Exception):
         llm.generate("Test prompt")
 
-def test_combine_chromosomes_with_llm():
+def test_combine_chromosomes():
     # Mock generate method
     mock_generate = MagicMock(return_value="Combined result")
     
@@ -73,7 +73,7 @@ def test_combine_chromosomes_with_llm():
     
     assert result == "Combined result"
 
-def test_combine_chromosomes_with_llm_error():
+def test_combine_chromosomes_error():
     # Mock generate method to raise an exception
     mock_generate = MagicMock(side_effect=Exception("Test error"))
     

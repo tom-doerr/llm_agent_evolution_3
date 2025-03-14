@@ -73,6 +73,14 @@ class EvolutionaryOptimizer:
         
         return offspring
     
+    def _create_parent_pairs(self, parents: List[Agent]) -> List[Tuple[Agent, Agent]]:
+        """Create pairs of parents for mating."""
+        parent_pairs = []
+        for i in range(0, len(parents), 2):
+            if i+1 < len(parents):
+                parent_pairs.append((parents[i], parents[i+1]))
+        return parent_pairs
+    
     def run_iteration(self):
         """Run a single iteration of the evolutionary algorithm."""
         # Select parents
@@ -80,10 +88,7 @@ class EvolutionaryOptimizer:
         parents = select_parents(self.population.agents, num_pairs * 2)
         
         # Create parent pairs
-        parent_pairs = []
-        for i in range(0, len(parents), 2):
-            if i+1 < len(parents):
-                parent_pairs.append((parents[i], parents[i+1]))
+        parent_pairs = self._create_parent_pairs(parents)
         
         # Process pairs
         with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:

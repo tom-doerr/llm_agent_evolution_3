@@ -1,6 +1,6 @@
 import threading
+from typing import List, Optional
 import toml
-from typing import List, Dict, Any, Optional
 from .agent import Agent
 from .constants import MAX_POPULATION_SIZE
 from .utils import weighted_sample, prepare_weights
@@ -57,14 +57,14 @@ class Population:
                 "max_size": self.max_size,
                 "agents": [agent.to_dict() for agent in self.agents]
             }
-            with open(filename, 'w') as f:
-                toml.dump(data, f)
+            with open(filename, 'w', encoding='utf-8') as file_handle:
+                toml.dump(data, file_handle)
     
     def load(self, filename: str) -> None:
         # Load population from TOML file (thread-safe)
         with self._lock:
-            with open(filename, 'r') as f:
-                data = toml.load(f)
+            with open(filename, 'r', encoding='utf-8') as file_handle:
+                data = toml.load(file_handle)
             
             self.max_size = data.get("max_size", MAX_POPULATION_SIZE)
             self.agents = [Agent.from_dict(agent_data) for agent_data in data.get("agents", [])]

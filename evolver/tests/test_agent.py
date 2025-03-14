@@ -1,4 +1,3 @@
-import pytest
 from evolver.agent import Agent
 
 def test_agent_initialization():
@@ -32,7 +31,7 @@ def test_agent_serialization():
     assert agent2.score == agent1.score
     assert agent2.creation_timestamp == agent1.creation_timestamp
 
-def test_agent_string_representation():
+def test_agent_str():
     # Test __str__ method
     agent = Agent(task_chromosome="test task", merging_chromosome="test merging", score=0.5)
     str_rep = str(agent)
