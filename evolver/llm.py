@@ -70,4 +70,5 @@ Input 2:
         except Exception as e:
             print(f"Error in LLM combination: {e}")
             # In case of error, return a simple combination of the inputs
-            return parent1_chromosome[:len(parent1_chromosome)//2] + parent2_chromosome[:len(parent2_chromosome)//2]
+            # Make sure we include parts of both parents
+            return f"{parent1_chromosome[:min(len(parent1_chromosome), 100)]} {parent2_chromosome[:min(len(parent2_chromosome), 100)]}"

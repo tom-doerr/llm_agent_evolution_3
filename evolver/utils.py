@@ -1,7 +1,7 @@
-import random
-import toml
 import threading
+import random
 from typing import List, TypeVar, Dict, Any
+import toml
 
 T = TypeVar('T')
 
@@ -12,19 +12,19 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
     # Perform weighted sampling without replacement
     if not items or not weights or k <= 0:
         return []
-    
+
     # Ensure k doesn't exceed the number of items
     k = min(k, len(items))
-    
+
     # Make copies to avoid modifying the originals
     remaining_items = items.copy()
     remaining_weights = weights.copy()
-    
+
     result = []
     for _ in range(k):
         if not remaining_items:
             break
-            
+
         # Calculate total weight
         total_weight = sum(remaining_weights)
         if total_weight <= 0:
@@ -32,22 +32,22 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
             idx = random.randrange(len(remaining_items))
         else:
             # Weighted selection
-            r = random.uniform(0, total_weight)
+            random_val = random.uniform(0, total_weight)
             cumulative_weight = 0
             idx = 0
             for i, weight in enumerate(remaining_weights):
                 cumulative_weight += weight
-                if cumulative_weight >= r:
+                if cumulative_weight >= random_val:
                     idx = i
                     break
-        
+
         # Add selected item to result
         result.append(remaining_items[idx])
-        
+
         # Remove selected item from remaining options
         remaining_items.pop(idx)
         remaining_weights.pop(idx)
-    
+
     return result
 
 def prepare_weights(scores: List[float]) -> List[float]:
@@ -57,25 +57,25 @@ def prepare_weights(scores: List[float]) -> List[float]:
     if min_score < 0:
         # Adjust scores to make them positive
         adjusted_scores = [score - min_score + 1 for score in scores]
-        
+
         # Normalize so the highest adjusted score is 1.0
         max_adjusted = max(adjusted_scores)
         adjusted_scores = [score / max_adjusted for score in adjusted_scores]
     else:
         adjusted_scores = [max(score, 0.0001) for score in scores]
-    
+
     # Calculate weights as score^2 (Pareto distribution)
     return [score * score for score in adjusted_scores]
 
 def save_to_toml(data: Dict[str, Any], filename: str) -> None:
     # Save data to TOML file
-    with open(filename, 'w') as f:
-        toml.dump(data, f)
+    with open(filename, 'w', encoding='utf-8') as file_handle:
+        toml.dump(data, file_handle)
 
 def load_from_toml(filename: str) -> Dict[str, Any]:
     # Load data from TOML file
-    with open(filename, 'r') as f:
-        return toml.load(f)
+    with open(filename, 'r', encoding='utf-8') as file_handle:
+        return toml.load(file_handle)
 
 def get_thread_rng():
     # Get a thread-local random number generator for thread safety

@@ -6,7 +6,7 @@ class SimpleModule(dspy.Module):
     def __init__(self):
         super().__init__()
         self.prompt = "Default prompt"
-    
+
     def forward(self, input_text):
         # Use the prompt to process input
         return f"{input_text} - {self.prompt}"
@@ -26,12 +26,12 @@ def main():
         parallel=2,     # Few parallel agents for demo
         verbose=True
     )
-    
+
     # Create module
     module = SimpleModule()
-    
+
     print("Starting optimization...")
-    
+
     # Optimize module
     optimized_module = optimizer.optimize(
         module=module,
@@ -39,7 +39,7 @@ def main():
         trainset=trainset,
         max_evaluations=20  # Few evaluations for demo
     )
-    
+
     # Use optimized module
     result = optimized_module("test")
     print(f"\nFinal result: {result}")
