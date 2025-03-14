@@ -20,7 +20,8 @@ class LLMInterface:
             return response
         except Exception as e:
             print(f"Error generating from LLM: {e}")
-            return ""
+            # Re-raise the exception to allow proper error handling
+            raise
     
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
                                      instruction_chromosome: str, max_tokens: Optional[int] = None) -> str:
@@ -48,4 +49,10 @@ Input 2:
 {parent2_chromosome}
 """
         
-        return self.generate(prompt, max_tokens=max_tokens)
+        try:
+            result = self.generate(prompt, max_tokens=max_tokens)
+            return result
+        except Exception as e:
+            print(f"Error in LLM combination: {e}")
+            # In case of error, return a simple combination of the inputs
+            return parent1_chromosome[:len(parent1_chromosome)//2] + parent2_chromosome[:len(parent2_chromosome)//2]
