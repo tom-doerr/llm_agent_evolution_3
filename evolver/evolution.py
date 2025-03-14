@@ -12,7 +12,12 @@ def pareto_weights(scores: List[float]) -> List[float]:
     # Ensure all scores are positive
     min_score = min(scores) if scores else 0
     if min_score < 0:
+        # Adjust scores to make them positive
         adjusted_scores = [score - min_score + 1 for score in scores]
+        
+        # Normalize so the highest adjusted score is 1.0
+        max_adjusted = max(adjusted_scores)
+        adjusted_scores = [score / max_adjusted for score in adjusted_scores]
     else:
         adjusted_scores = [max(score, 0.0001) for score in scores]
     

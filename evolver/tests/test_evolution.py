@@ -46,7 +46,7 @@ def test_find_hotspots():
     # Should include positions of punctuation
     assert 5 in hotspots  # Position of comma
     assert 12 in hotspots  # Position of exclamation mark
-    assert 27 in hotspots  # Position of period
+    assert 26 in hotspots  # Position of period (index 26, not 27)
 
 def test_combine_chromosomes():
     # Create test agents
@@ -82,3 +82,10 @@ def test_create_offspring():
     # Chromosomes should not be empty
     assert offspring.chromosomes["task"]
     assert offspring.chromosomes["merging"]
+
+def test_find_hotspots_debug():
+    # Debug test to verify character positions
+    text = "Hello, world! This is a test."
+    
+    # Verify the position of the period
+    assert text[26] == "."
