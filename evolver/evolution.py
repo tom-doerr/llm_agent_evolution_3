@@ -1,4 +1,3 @@
-import random
 import string
 import subprocess
 from typing import List, Tuple, Optional, Callable
@@ -6,23 +5,8 @@ import math
 
 from .agent import Agent
 from .constants import MAX_CHROMOSOME_LENGTH
+from .utils import weighted_sample, prepare_weights
 
-def pareto_weights(scores: List[float]) -> List[float]:
-    # Calculate Pareto distribution weights (fitness^2)
-    # Ensure all scores are positive
-    min_score = min(scores) if scores else 0
-    if min_score < 0:
-        # Adjust scores to make them positive
-        adjusted_scores = [score - min_score + 1 for score in scores]
-        
-        # Normalize so the highest adjusted score is 1.0
-        max_adjusted = max(adjusted_scores)
-        adjusted_scores = [score / max_adjusted for score in adjusted_scores]
-    else:
-        adjusted_scores = [max(score, 0.0001) for score in scores]
-    
-    # Calculate weights as score^2
-    return [score * score for score in adjusted_scores]
 
 def select_parents(population: List[Agent], num_parents: int) -> List[Agent]:
     # Select parents using Pareto distribution
@@ -30,44 +14,10 @@ def select_parents(population: List[Agent], num_parents: int) -> List[Agent]:
         return []
     
     scores = [agent.score for agent in population]
-    weights = pareto_weights(scores)
+    weights = prepare_weights(scores)
     
-    # Ensure num_parents doesn't exceed population size
-    num_parents = min(num_parents, len(population))
-    
-    # Weighted sampling without replacement
-    parents = []
-    remaining_agents = population.copy()
-    remaining_weights = weights.copy()
-    
-    for _ in range(num_parents):
-        if not remaining_agents:
-            break
-            
-        # Select an agent based on weights
-        total_weight = sum(remaining_weights)
-        if total_weight <= 0:
-            # If all weights are zero, select randomly
-            idx = random.randrange(len(remaining_agents))
-        else:
-            # Weighted selection
-            r = random.uniform(0, total_weight)
-            cumulative_weight = 0
-            idx = 0
-            for i, weight in enumerate(remaining_weights):
-                cumulative_weight += weight
-                if cumulative_weight >= r:
-                    idx = i
-                    break
-        
-        # Add selected agent to parents
-        parents.append(remaining_agents[idx])
-        
-        # Remove selected agent from remaining options
-        remaining_agents.pop(idx)
-        remaining_weights.pop(idx)
-    
-    return parents
+    # Use common weighted sampling utility
+    return weighted_sample(population, weights, num_parents)
 
 def find_hotspots(text: str) -> List[int]:
     # Identify punctuation and space positions as potential crossover points
