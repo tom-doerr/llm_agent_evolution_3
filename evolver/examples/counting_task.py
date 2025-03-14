@@ -8,14 +8,12 @@
 import sys
 from evolver.constants import TEST_OPTIMAL_LENGTH
 
+# Import the evaluation function from our module
+from evolver.evaluation import evaluate_agent_output
+
 def evaluate_output(text):
-    # Evaluate the agent output:
-    # - Count the number of 'a' characters (reward)
-    # - Apply penalty for length beyond optimal
-    count_a = text.count('a')
-    penalty = max(0, len(text) - TEST_OPTIMAL_LENGTH)
-    score = count_a - penalty
-    return score
+    # Use the consolidated evaluation function
+    return evaluate_agent_output(text, TEST_OPTIMAL_LENGTH)
 
 if __name__ == "__main__":
     # Read input from stdin

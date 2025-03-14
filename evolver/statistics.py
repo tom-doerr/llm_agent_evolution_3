@@ -95,9 +95,15 @@ class Statistics:
             }
     
     def print_stats(self, verbose: bool = False, population_size: int = 0) -> None:
-        # Print current statistics
+        """Print current statistics."""
+        # Get statistics
         stats_dict = self.get_stats_dict(population_size)
         
+        # Format and print statistics using the appropriate formatter
+        self._format_and_print_stats(stats_dict, verbose)
+    
+    def _format_and_print_stats(self, stats_dict: Dict[str, Any], verbose: bool) -> None:
+        """Format and print statistics using the appropriate formatter."""
         # Use rich if available, otherwise plain text
         if RICH_AVAILABLE:
             self._print_stats_rich(stats_dict, verbose)
@@ -311,3 +317,17 @@ class Statistics:
             print(f"Merging chromosome: {agent.chromosomes['merging'][:100]}...")
     
     
+    def log_optimization_progress(self, population_size: int, verbose: bool = False) -> None:
+        """Log detailed optimization progress."""
+        stats = self.get_stats_dict(population_size)
+        
+        print(f"\n--- Optimization Progress (Evaluation {self.total_evaluations}) ---")
+        print(f"Population: {population_size} agents | Evaluations: {self.total_evaluations}")
+        print(f"Scores: Mean={stats['mean']:.2f} | Median={stats['median']:.2f} | Best={stats['best']:.2f}")
+        
+        if self.best_agent:
+            print(f"\nBest agent output excerpt: \"{self.best_agent.chromosomes['task'][:30]}...\" (score: {self.best_agent.score:.2f})")
+        
+        if verbose and self.mating_history and len(self.mating_history) > 0:
+            latest = list(self.mating_history)[-1]
+            print(f"\nRecent mating: {latest['parent1_score']:.2f} + {latest['parent2_score']:.2f} → {latest['offspring_score']:.2f}")

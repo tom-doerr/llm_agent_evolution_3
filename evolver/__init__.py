@@ -5,6 +5,7 @@ from .statistics import Statistics
 from .llm import LLMInterface
 from .main import EvolutionaryOptimizer
 from .dspy_optimizer import DSPyOptimizer
+from .evaluation import evaluate_agent, evaluate_agent_output
 
 __all__ = [
     'Agent',
@@ -14,5 +15,7 @@ __all__ = [
     'Statistics',
     'LLMInterface',
     'EvolutionaryOptimizer',
-    'DSPyOptimizer'
+    'DSPyOptimizer',
+    'evaluate_agent',
+    'evaluate_agent_output'
 ]

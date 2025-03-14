@@ -1,5 +1,4 @@
 import string
-import subprocess
 from typing import List, Tuple, Optional, TypeVar
 
 from .agent import Agent
@@ -139,46 +138,4 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
     
     return new_agent
 
-def external_command_evaluation(agent: Agent, command: str) -> float:
-    """Run external command for evaluation and return the score."""
-    try:
-        # Get agent output based on task chromosome
-        agent_output = agent.chromosomes["task"]
-        
-        # Run the command with agent output as input
-        process = subprocess.Popen(
-            command,
-            shell=True,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        
-        stdout, stderr = process.communicate(input=agent_output)
-        
-        # Check for process errors
-        if process.returncode != 0:
-            print(f"Command failed with exit code {process.returncode}")
-            if stderr:
-                print(f"Error: {stderr.strip()}")
-            return 0.0
-        
-        # Extract score from the last line of output
-        lines = stdout.strip().split('\n')
-        if not lines:
-            return 0.0
-            
-        try:
-            score = float(lines[-1])
-            return score
-        except ValueError:
-            print(f"Invalid score format in command output: {lines[-1]}")
-            return 0.0
-            
-    except (subprocess.SubprocessError, OSError) as error:
-        print(f"Error running external command: {error}")
-        return 0.0
-    except Exception as error:
-        print(f"Unexpected error in external evaluation: {error}")
-        return 0.0
+# External command evaluation moved to evaluation.py

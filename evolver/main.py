@@ -8,7 +8,8 @@ from typing import Dict, Any, Tuple, Optional
 from .agent import Agent
 from .cli import parse_args
 from .constants import DEFAULT_PARALLEL_AGENTS
-from .evolution import select_parents, create_offspring, external_command_evaluation
+from .evolution import select_parents, create_offspring
+from .evaluation import evaluate_agent, external_command_evaluation
 from .utils import create_parent_pairs
 from .llm import LLMInterface
 from .population import Population
@@ -40,39 +41,36 @@ class EvolutionaryOptimizer:
                 self.statistics.print_detailed_stats(population_size=len(self.population))
     
     def evaluate_agent(self, agent: Agent) -> float:
-        # Evaluate agent using external command or test function
-        if self.eval_command:
-            return external_command_evaluation(agent, self.eval_command)
-        
-        # Default test task: reward for 'a's up to optimal length
-        from .constants import TEST_OPTIMAL_LENGTH
-        text = agent.chromosomes["task"]
-        count_a = text.count('a')
-        penalty = max(0, len(text) - TEST_OPTIMAL_LENGTH)
-        return count_a - penalty
+        # Use the consolidated evaluation function
+        return evaluate_agent(agent, self.eval_command)
     
     def create_and_evaluate_offspring(self, parents: Tuple[Agent, Agent]) -> Optional[Agent]:
-        # Create and evaluate a new agent from parents
+        """Create and evaluate a new agent from parents."""
         parent1, parent2 = parents
         
-        # Create offspring using LLM for combination
-        offspring = create_offspring(parent1, parent2, self.llm)
+        # Create offspring
+        offspring = self._create_offspring(parent1, parent2)
         
         # Evaluate offspring
-        score = self.evaluate_agent(offspring)
-        offspring.score = score
-        
-        # Track mating for statistics
-        self.statistics.track_mating(parent1, parent2, offspring)
+        offspring.score = self.evaluate_agent(offspring)
         
         # Update statistics
+        self._update_statistics(parent1, parent2, offspring)
+        
+        return offspring
+
+    def _create_offspring(self, parent1: Agent, parent2: Agent) -> Agent:
+        """Create offspring using LLM for combination."""
+        return create_offspring(parent1, parent2, self.llm)
+
+    def _update_statistics(self, parent1: Agent, parent2: Agent, offspring: Agent) -> None:
+        """Update statistics with new offspring."""
+        self.statistics.track_mating(parent1, parent2, offspring)
         self.statistics.update(offspring)
         
         if self.verbose:
             print(f"New agent: {offspring}, Parents: {parent1.score:.4f} + {parent2.score:.4f}")
             print(f"Task excerpt: {offspring.chromosomes['task'][:30]}...")
-        
-        return offspring
     
     
     def run_iteration(self):
@@ -171,7 +169,10 @@ class EvolutionaryOptimizer:
                 
                 # Print statistics periodically
                 if iteration % stats_interval == 0:
-                    self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
+                    if self.verbose:
+                        self.statistics.log_optimization_progress(population_size=len(self.population), verbose=self.verbose)
+                    else:
+                        self.statistics.print_stats(verbose=False, population_size=len(self.population))
                 
                 # Small delay to prevent CPU hogging
                 time.sleep(0.01)

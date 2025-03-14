@@ -21,7 +21,7 @@ class LLMInterface:
                 raise
     
     def generate(self, prompt: str, max_tokens: Optional[int] = None) -> str:
-        # Generate text based on prompt
+        """Generate text based on prompt."""
         if not self.lm:
             self.initialize()
         
@@ -33,9 +33,17 @@ class LLMInterface:
                 response = response[0] if response else ""
             
             return str(response)
-        except (ValueError, RuntimeError, TypeError) as error:
-            print(f"Error in LLM generation: {error}")
-            # Always return a string
+        except ValueError as error:
+            print(f"Value error in LLM generation: {error}")
+            return ""
+        except RuntimeError as error:
+            print(f"Runtime error in LLM generation: {error}")
+            return ""
+        except TypeError as error:
+            print(f"Type error in LLM generation: {error}")
+            return ""
+        except Exception as error:
+            print(f"Unexpected error in LLM generation: {error}")
             return ""
     
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
