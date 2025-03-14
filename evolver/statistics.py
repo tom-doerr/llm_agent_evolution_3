@@ -254,7 +254,14 @@ class Statistics:
             closest_agent = None
             closest_distance = float('inf')
             
-            for agent in self.agents:
+            # We don't have direct access to all agents, so use best and worst as fallback
+            agents_to_check = []
+            if self.best_agent:
+                agents_to_check.append(self.best_agent)
+            if self.worst_agent and self.worst_agent != self.best_agent:
+                agents_to_check.append(self.worst_agent)
+                
+            for agent in agents_to_check:
                 distance = abs(agent.score - median_score)
                 if distance < closest_distance:
                     closest_agent = agent
