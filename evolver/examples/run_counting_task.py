@@ -6,6 +6,11 @@ Example script to run the evolutionary optimizer on the counting task.
 import os
 import sys
 import time
+import importlib.util
+
+# Add the parent directory to sys.path to allow imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from evolver.main import EvolutionaryOptimizer
 from evolver.agent import Agent
 from evolver.constants import TEST_OPTIMAL_LENGTH

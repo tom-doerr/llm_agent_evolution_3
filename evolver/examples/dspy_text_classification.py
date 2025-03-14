@@ -3,7 +3,13 @@
 Example script to run the DSPyOptimizer on a text classification task.
 """
 
+import os
+import sys
 import dspy
+
+# Add the parent directory to sys.path to allow imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from evolver.dspy_optimizer import DSPyOptimizer
 
 # Create a simple text classifier
@@ -17,8 +23,12 @@ class TextClassifier(dspy.Module):
         full_prompt = f"{self.prompt}\n\nText: {text}\n\nClassification:"
         response = dspy.LM("openrouter/google/gemini-2.0-flash-001")(full_prompt, max_tokens=10)
         
+        # Handle response which might be a list or string
+        if isinstance(response, list):
+            response = response[0] if response else ""
+        
         # Clean up response
-        response = response.strip().lower()
+        response = str(response).strip().lower()
         if "positive" in response:
             return "positive"
         elif "negative" in response:

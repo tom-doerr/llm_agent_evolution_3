@@ -20,7 +20,12 @@ class LLMInterface:
         for attempt in range(max_retries):
             try:
                 response = self.lm(prompt, max_tokens=max_tokens)
-                return response
+                
+                # Handle response which might be a list or string
+                if isinstance(response, list):
+                    response = response[0] if response else ""
+                
+                return str(response)
             except Exception as e:
                 if attempt < max_retries - 1:
                     # Exponential backoff: wait 1s, 2s, 4s, etc.
