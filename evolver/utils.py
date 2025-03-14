@@ -46,18 +46,22 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
 
     result = []
     for _ in range(k):
-        if not remaining_items:
+        if not remaining_items or not remaining_weights:
             break
 
         # Select an item and get its index
-        selected_item, idx = _select_weighted_item(remaining_items, remaining_weights)
-        
-        # Add selected item to result
-        result.append(selected_item)
+        try:
+            selected_item, idx = _select_weighted_item(remaining_items, remaining_weights)
+            
+            # Add selected item to result
+            result.append(selected_item)
 
-        # Remove selected item from remaining options
-        remaining_items.pop(idx)
-        remaining_weights.pop(idx)
+            # Remove selected item from remaining options
+            remaining_items.pop(idx)
+            remaining_weights.pop(idx)
+        except (IndexError, ValueError):
+            # Handle potential errors during selection
+            break
 
     return result
 

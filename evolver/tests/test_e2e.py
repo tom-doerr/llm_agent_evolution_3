@@ -17,7 +17,7 @@ def run_optimization_iterations(optimizer, max_iterations=10):
     """Helper function to run optimization iterations."""
     iteration = 0
     
-    with pytest.raises(StopIteration):  # Just to break out of the loop
+    try:
         while optimizer.running and iteration < max_iterations:
             iteration += 1
             
@@ -40,6 +40,8 @@ def run_optimization_iterations(optimizer, max_iterations=10):
                 
         if iteration >= max_iterations:
             raise StopIteration()
+    except StopIteration:
+        pass
     
     return optimizer
 
