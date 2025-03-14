@@ -69,15 +69,9 @@ class LLMInterface:
         if not instruction_chromosome:
             instruction_chromosome = "Combine these two inputs in a creative way."
         
-        prompt = f"""
-{instruction_chromosome}
-
-Input 1:
-{parent1_chromosome}
-
-Input 2:
-{parent2_chromosome}
-"""
+        prompt = (f"{instruction_chromosome}\n\n"
+                 f"Input 1:\n{parent1_chromosome}\n\n"
+                 f"Input 2:\n{parent2_chromosome}")
         
         try:
             result = self.generate(prompt, max_tokens=max_tokens)
