@@ -33,6 +33,10 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
     if not items or not weights or k <= 0:
         return []
 
+    # Ensure weights and items have the same length
+    if len(weights) != len(items):
+        weights = weights[:len(items)] if len(weights) > len(items) else weights + [0.0001] * (len(items) - len(weights))
+
     # Ensure k doesn't exceed the number of items
     k = min(k, len(items))
 

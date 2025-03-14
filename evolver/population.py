@@ -35,6 +35,9 @@ class Population:
     def get_candidates(self, num_candidates: int, weights: Optional[List[float]] = None) -> List[Agent]:
         # Weighted sampling without replacement (thread-safe)
         with self._lock:
+            if not self.agents:
+                return []
+                
             if not weights:
                 weights = prepare_weights([agent.score for agent in self.agents])
             

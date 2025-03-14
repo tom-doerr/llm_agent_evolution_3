@@ -14,11 +14,14 @@ def select_parents(population: List[Agent], num_parents: int) -> List[Agent]:
     if not population or num_parents <= 0:
         return []
     
+    # Ensure we don't try to select more parents than available
+    num_to_select = min(num_parents, len(population))
+    
     scores = [agent.score for agent in population]
     weights = prepare_weights(scores)
     
     # Use common weighted sampling utility
-    return weighted_sample(population, weights, num_parents)
+    return weighted_sample(population, weights, num_to_select)
 
 def find_hotspots(text: str) -> List[int]:
     # Identify punctuation and space positions as potential crossover points

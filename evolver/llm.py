@@ -69,6 +69,7 @@ class LLMInterface:
         if not instruction_chromosome:
             instruction_chromosome = "Combine these two inputs in a creative way."
         
+        # Create a prompt that combines the instruction and both parent chromosomes
         prompt = (
             f"{instruction_chromosome}\n\n"
             f"Input 1:\n{parent1_chromosome}\n\n"
