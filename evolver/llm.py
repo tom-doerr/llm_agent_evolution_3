@@ -12,7 +12,7 @@ class LLMInterface:
         # Set up LLM connection
         try:
             self.lm = dspy.LM(self.model_name)
-        except Exception as error:
+        except (ValueError, ImportError, RuntimeError) as error:
             print(f"Error initializing LLM with model {self.model_name}: {error}")
             # Create a dummy LM for testing purposes if in test environment
             if self.model_name == "test-model":
@@ -33,8 +33,9 @@ class LLMInterface:
                 response = response[0] if response else ""
             
             return str(response)
-        except Exception as error:
+        except (ValueError, RuntimeError, TypeError) as error:
             print(f"Error in LLM generation: {error}")
+            # Always return a string
             return ""
     
     def combine_chromosomes_with_llm(self, parent1_chromosome: str, parent2_chromosome: str, 
@@ -56,8 +57,8 @@ class LLMInterface:
         # Create a prompt that combines the instruction and both parent chromosomes
         prompt = (
             f"{instruction_chromosome}\n\n"
-            f"Input 1:\n{parent1_chromosome}\n\n"
-            f"Input 2:\n{parent2_chromosome}"
+            f"Input 1:\n{parent1_chromosome[:1000]}\n\n"  # Limit input length
+            f"Input 2:\n{parent2_chromosome[:1000]}"      # Limit input length
         )
         
         result = self.generate(prompt, max_tokens=max_tokens)

@@ -64,10 +64,7 @@ def test_simple_optimization():
     # Create initial population with agents that have 'a's to ensure test passes
     for i in range(5):
         # All agents have at least one 'a' to ensure test passes
-        if i == 0:
-            agent = Agent(task_chromosome="a" * 5)
-        else:
-            agent = Agent(task_chromosome="a" + "x" * i)  # Low-scoring agents with at least one 'a'
+        agent = Agent(task_chromosome="a" * (i + 1))  # Ensure all agents have 'a's
         agent.score = optimizer.evaluate_agent(agent)
         optimizer.population.add_agent(agent)
         optimizer.statistics.update(agent)

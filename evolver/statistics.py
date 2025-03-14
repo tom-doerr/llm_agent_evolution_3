@@ -98,6 +98,7 @@ class Statistics:
         # Print current statistics
         stats_dict = self.get_stats_dict(population_size)
         
+        # Use rich if available, otherwise plain text
         if RICH_AVAILABLE:
             self._print_stats_rich(stats_dict, verbose)
         else:
@@ -112,12 +113,16 @@ class Statistics:
         table.add_column("Metric", style="cyan")
         table.add_column("Value", style="green")
         
-        table.add_row("Population size", str(stats_dict['population_size']))
-        table.add_row("Total evaluations", str(stats_dict['total_evaluations']))
-        table.add_row("Elapsed time", f"{stats_dict['elapsed_time']:.2f} seconds")
-        table.add_row("Mean score", f"{stats_dict['mean']:.4f}")
-        table.add_row("Median score", f"{stats_dict['median']:.4f}")
-        table.add_row("Std deviation", f"{stats_dict['std_dev']:.4f}")
+        # Add rows for each statistic
+        for metric, value in [
+            ("Population size", str(stats_dict['population_size'])),
+            ("Total evaluations", str(stats_dict['total_evaluations'])),
+            ("Elapsed time", f"{stats_dict['elapsed_time']:.2f} seconds"),
+            ("Mean score", f"{stats_dict['mean']:.4f}"),
+            ("Median score", f"{stats_dict['median']:.4f}"),
+            ("Std deviation", f"{stats_dict['std_dev']:.4f}"),
+        ]:
+            table.add_row(metric, value)
         
         if self.best_agent:
             table.add_row("Best agent", str(self.best_agent))
@@ -126,32 +131,47 @@ class Statistics:
         
         # Print mating history if verbose
         if verbose and self.mating_history:
-            self._print_mating_history_rich(console)
+            self._print_mating_history(console)
     
-    def _print_mating_history_rich(self, console) -> None:
-        # Print mating history with Rich
-        mating_table = Table(title="Recent Mating Events")
-        mating_table.add_column("#", style="dim")
-        mating_table.add_column("Parent 1", style="cyan")
-        mating_table.add_column("Parent 2", style="cyan")
-        mating_table.add_column("Offspring", style="green")
-        
-        for i, event in enumerate(list(self.mating_history)[-5:]):
-            mating_table.add_row(
-                str(i+1),
-                f"{event['parent1_score']:.4f}",
-                f"{event['parent2_score']:.4f}",
-                f"{event['offspring_score']:.4f}"
-            )
-        
-        console.print(mating_table)
-        
-        # Show chromosomes of the most recent mating event if available
-        if self.mating_history:
-            self._print_chromosome_details_rich(console)
+    def _print_mating_history(self, console=None) -> None:
+        # Print mating history (works with both rich and plain text)
+        if not self.mating_history:
+            return
+            
+        if console and RICH_AVAILABLE:
+            # Rich version
+            mating_table = Table(title="Recent Mating Events")
+            mating_table.add_column("#", style="dim")
+            mating_table.add_column("Parent 1", style="cyan")
+            mating_table.add_column("Parent 2", style="cyan")
+            mating_table.add_column("Offspring", style="green")
+            
+            for i, event in enumerate(list(self.mating_history)[-5:]):
+                mating_table.add_row(
+                    str(i+1),
+                    f"{event['parent1_score']:.4f}",
+                    f"{event['parent2_score']:.4f}",
+                    f"{event['offspring_score']:.4f}"
+                )
+            
+            console.print(mating_table)
+            
+            # Show chromosomes of the most recent mating event
+            self._print_chromosome_details(console)
+        else:
+            # Plain text version
+            print("\n--- Recent Mating Events ---")
+            for i, event in enumerate(list(self.mating_history)[-5:]):
+                print(f"{i+1}. Parents: {event['parent1_score']:.4f} + {event['parent2_score']:.4f} → Offspring: {event['offspring_score']:.4f}")
+            
+            # Show chromosomes of the most recent mating event
+            self._print_chromosome_details()
     
-    def _print_chromosome_details_rich(self, console) -> None:
-        # Print chromosome details with Rich
+    def _print_chromosome_details(self, console=None) -> None:
+        # Print chromosome details (works with both rich and plain text)
+        if not self.mating_history:
+            return
+            
         latest = list(self.mating_history)[-1]
         parent1_id = latest['parent1']
         parent2_id = latest['parent2']
@@ -160,7 +180,11 @@ class Statistics:
         parent1 = self.best_agent if self.best_agent and self.best_agent.id == parent1_id else None
         parent2 = self.best_agent if self.best_agent and self.best_agent.id == parent2_id else None
         
-        if parent1 or parent2:
+        if not (parent1 or parent2):
+            return
+            
+        if console and RICH_AVAILABLE:
+            # Rich version
             chromo_table = Table(title="Chromosome Details (Most Recent Mating)")
             chromo_table.add_column("Agent", style="cyan")
             chromo_table.add_column("Task Excerpt", style="green")
@@ -180,6 +204,15 @@ class Statistics:
                 )
             
             console.print(chromo_table)
+        else:
+            # Plain text version
+            print("\n--- Chromosome Details (Most Recent Mating) ---")
+            if parent1:
+                print(f"Parent 1 ({parent1.score:.4f}) Task: {parent1.chromosomes['task'][:50]}...")
+                print(f"Parent 1 Merging: {parent1.chromosomes['merging'][:50]}...")
+            if parent2:
+                print(f"Parent 2 ({parent2.score:.4f}) Task: {parent2.chromosomes['task'][:50]}...")
+                print(f"Parent 2 Merging: {parent2.chromosomes['merging'][:50]}...")
     
     def _print_stats_plain(self, stats_dict: Dict[str, Any], verbose: bool) -> None:
         # Plain text output
@@ -195,36 +228,7 @@ class Statistics:
             print(f"Best agent: {self.best_agent}")
         
         if verbose and self.mating_history:
-            self._print_mating_history_plain()
-    
-    def _print_mating_history_plain(self) -> None:
-        # Print mating history in plain text
-        print("\n--- Recent Mating Events ---")
-        for i, event in enumerate(list(self.mating_history)[-5:]):
-            print(f"{i+1}. Parents: {event['parent1_score']:.4f} + {event['parent2_score']:.4f} → Offspring: {event['offspring_score']:.4f}")
-            
-        # Show chromosomes of the most recent mating event if available
-        if self.mating_history:
-            self._print_chromosome_details_plain()
-    
-    def _print_chromosome_details_plain(self) -> None:
-        # Print chromosome details in plain text
-        latest = list(self.mating_history)[-1]
-        parent1_id = latest['parent1']
-        parent2_id = latest['parent2']
-        
-        # Find the agents by ID
-        parent1 = self.best_agent if self.best_agent and self.best_agent.id == parent1_id else None
-        parent2 = self.best_agent if self.best_agent and self.best_agent.id == parent2_id else None
-        
-        if parent1 or parent2:
-            print("\n--- Chromosome Details (Most Recent Mating) ---")
-            if parent1:
-                print(f"Parent 1 Task (excerpt): {parent1.chromosomes['task'][:50]}...")
-                print(f"Parent 1 Merging (excerpt): {parent1.chromosomes['merging'][:50]}...")
-            if parent2:
-                print(f"Parent 2 Task (excerpt): {parent2.chromosomes['task'][:50]}...")
-                print(f"Parent 2 Merging (excerpt): {parent2.chromosomes['merging'][:50]}...")
+            self._print_mating_history()
     
     def print_detailed_stats(self, population_size: int = 0) -> None:
         # Print detailed statistics (for exit)
@@ -236,15 +240,9 @@ class Statistics:
         self._print_agent_details(self.worst_agent, "Worst")
         self._print_agent_details(self._get_median_agent(), "Median")
         
-        # Print additional details based on available libraries
-        self._print_additional_details()
-    
-    def _print_additional_details(self):
-        # Print additional details based on available libraries
-        if RICH_AVAILABLE:
-            self._print_detailed_stats_rich()
-        else:
-            self._print_detailed_stats_plain()
+        # Print mating history
+        if self.mating_history:
+            self._print_mating_history()
     
     def _get_median_agent(self) -> Optional[Agent]:
         """Get the agent with the median score."""
@@ -285,12 +283,18 @@ class Statistics:
             table.add_column("Property", style="cyan")
             table.add_column("Value", style="green")
             
-            table.add_row("ID", agent.id)
-            table.add_row("Score", f"{agent.score:.4f}")
-            table.add_row("Task chromosome length", str(len(agent.chromosomes['task'])))
+            # Add rows for each property
+            for prop, value in [
+                ("ID", agent.id),
+                ("Score", f"{agent.score:.4f}"),
+                ("Task chromosome length", str(len(agent.chromosomes['task']))),
+                ("Merging chromosome length", str(len(agent.chromosomes['merging'])))
+            ]:
+                table.add_row(prop, value)
             
             console.print(table)
             
+            # Show chromosome content
             console.print(Panel(
                 agent.chromosomes['task'][:500] + 
                 ("..." if len(agent.chromosomes['task']) > 500 else ""),
@@ -302,56 +306,8 @@ class Statistics:
             print(f"ID: {agent.id}")
             print(f"Score: {agent.score:.4f}")
             print(f"Task chromosome length: {len(agent.chromosomes['task'])}")
+            print(f"Merging chromosome length: {len(agent.chromosomes['merging'])}")
             print(f"Task chromosome: {agent.chromosomes['task'][:100]}...")
+            print(f"Merging chromosome: {agent.chromosomes['merging'][:100]}...")
     
-    def _print_best_agent_details_rich(self, console: 'Console') -> None:
-        # Print detailed best agent info with Rich
-        if not self.best_agent:
-            return
-            
-        best_table = Table(title="Best Agent Details")
-        best_table.add_column("Property", style="cyan")
-        best_table.add_column("Value", style="green")
-        
-        best_table.add_row("ID", self.best_agent.id)
-        best_table.add_row("Score", f"{self.best_agent.score:.4f}")
-        best_table.add_row("Task chromosome length", str(len(self.best_agent.chromosomes['task'])))
-        
-        console.print(best_table)
     
-    def _print_chromosomes_rich(self, console: 'Console') -> None:
-        # Print chromosomes in panels with Rich
-        if not self.best_agent:
-            return
-            
-        console.print(Panel(
-            self.best_agent.chromosomes['task'][:500] + 
-            ("..." if len(self.best_agent.chromosomes['task']) > 500 else ""),
-            title="Task Chromosome",
-            border_style="green"
-        ))
-        
-        console.print(Panel(
-            self.best_agent.chromosomes['merging'][:500] + 
-            ("..." if len(self.best_agent.chromosomes['merging']) > 500 else ""),
-            title="Merging Chromosome",
-            border_style="yellow"
-        ))
-    
-    def _print_detailed_stats_rich(self) -> None:
-        # Print detailed stats with Rich
-        console = Console()
-        
-        # Print mating history
-        if self.mating_history:
-            self._print_mating_history_rich(console)
-    
-    def _print_detailed_stats_plain(self) -> None:
-        # Print detailed stats in plain text
-        print("\n--- Best Agent Details ---")
-        if self.best_agent:
-            print(f"ID: {self.best_agent.id}")
-            print(f"Score: {self.best_agent.score:.4f}")
-            print(f"Task chromosome length: {len(self.best_agent.chromosomes['task'])}")
-            print(f"Task chromosome: {self.best_agent.chromosomes['task'][:100]}...")
-            print(f"Merging chromosome: {self.best_agent.chromosomes['merging'][:100]}...")

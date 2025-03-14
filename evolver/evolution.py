@@ -140,7 +140,7 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
     return new_agent
 
 def external_command_evaluation(agent: Agent, command: str) -> float:
-    # Run external command for evaluation
+    """Run external command for evaluation and return the score."""
     try:
         # Get agent output based on task chromosome
         agent_output = agent.chromosomes["task"]
@@ -160,24 +160,25 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
         # Check for process errors
         if process.returncode != 0:
             print(f"Command failed with exit code {process.returncode}")
+            if stderr:
+                print(f"Error: {stderr.strip()}")
             return 0.0
         
         # Extract score from the last line of output
-        return _parse_command_output(stdout)
+        lines = stdout.strip().split('\n')
+        if not lines:
+            return 0.0
+            
+        try:
+            score = float(lines[-1])
+            return score
+        except ValueError:
+            print(f"Invalid score format in command output: {lines[-1]}")
+            return 0.0
+            
+    except (subprocess.SubprocessError, OSError) as error:
+        print(f"Error running external command: {error}")
+        return 0.0
     except Exception as error:
-        print(f"Error in external evaluation: {error}")
-        return 0.0
-
-def _parse_command_output(stdout: str) -> float:
-    """Parse the command output to extract the score."""
-    lines = stdout.strip().split('\n')
-    if not lines:
-        return 0.0
-        
-    try:
-        score = float(lines[-1])
-        return score
-    except ValueError:
-        # If last line isn't a valid float, return 0
-        print(f"Invalid score format in command output: {lines[-1]}")
+        print(f"Unexpected error in external evaluation: {error}")
         return 0.0

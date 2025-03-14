@@ -93,15 +93,19 @@ class EvolutionaryOptimizer:
     
     def _process_parent_pairs(self, parent_pairs):
         """Process parent pairs in parallel to create offspring."""
+        # Skip if no pairs or not running
+        if not parent_pairs or not self.running:
+            return
+            
         with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:
             # Submit tasks
-            future_to_pair = {
-                executor.submit(self.create_and_evaluate_offspring, pair): pair
+            futures = [
+                executor.submit(self.create_and_evaluate_offspring, pair)
                 for pair in parent_pairs
-            }
+            ]
             
-            # Process results
-            for future in as_completed(future_to_pair):
+            # Process results as they complete
+            for future in as_completed(futures):
                 if not self.running:
                     break
                     
@@ -155,39 +159,32 @@ class EvolutionaryOptimizer:
         print(f"Starting evolution with {self.num_parallel} parallel agents")
         
         # Run the evolution loop
-        self._run_evolution_loop()
-        
-        # Print final statistics and save if needed
-        self._finalize_run()
-    
-    def _run_evolution_loop(self):
-        # Main evolution loop
         stats_interval = 10  # Print stats every N iterations
         iteration = 0
         
-        while self.running:
-            iteration += 1
+        try:
+            while self.running:
+                iteration += 1
+                
+                # Run one iteration
+                self.run_iteration()
+                
+                # Print statistics periodically
+                if iteration % stats_interval == 0:
+                    self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
+                
+                # Small delay to prevent CPU hogging
+                time.sleep(0.01)
+        finally:
+            # Print final statistics
+            print("\n=== Final Statistics ===")
+            self.statistics.print_detailed_stats(population_size=len(self.population))
             
-            # Run one iteration
-            self.run_iteration()
-            
-            # Print statistics periodically
-            if iteration % stats_interval == 0:
-                self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
-            
-            # Small delay to prevent CPU hogging
-            time.sleep(0.01)
-    
-    def _finalize_run(self):
-        # Print final statistics
-        print("\n=== Final Statistics ===")
-        self.statistics.print_detailed_stats(population_size=len(self.population))
-        
-        # Save best agent if specified
-        if self.args.get("save"):
-            filename = self.args["save"]
-            self.population.save(filename)
-            print(f"Saved population to {filename}")
+            # Save population if specified
+            if self.args.get("save"):
+                filename = self.args["save"]
+                self.population.save(filename)
+                print(f"Saved population to {filename}")
 
 def main():
     # Parse command line arguments

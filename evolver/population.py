@@ -26,11 +26,11 @@ class Population:
             if agent in self.agents:
                 self.agents.remove(agent)
     
-    def get_best_agents(self, num_agents: int = 1) -> List[Agent]:
+    def get_best_agents(self, num_best: int = 1) -> List[Agent]:
         # Get top N agents by score (thread-safe)
         with self._lock:
             sorted_agents = sorted(self.agents, key=lambda a: a.score, reverse=True)
-            return sorted_agents[:min(num_agents, len(sorted_agents))]
+            return sorted_agents[:min(num_best, len(sorted_agents))]
     
     def get_candidates(self, num_candidates: int, weights: Optional[List[float]] = None) -> List[Agent]:
         # Weighted sampling without replacement (thread-safe)
