@@ -99,7 +99,7 @@ class DSPyOptimizer:
         while self.optimizer.running and self.optimizer.statistics.total_evaluations < max_evaluations:
             # Select parents
             num_pairs = max(1, self.optimizer.num_parallel)
-            parents = select_parents(self.optimizer.population.agents, num_pairs * 2)
+            parents = self.optimizer.population.get_candidates(num_pairs * 2)
             
             # Create parent pairs
             parent_pairs = []
@@ -336,6 +336,7 @@ import dspy
 from typing import List, Callable, Any, Optional, Dict
 from .agent import Agent
 from .main import EvolutionaryOptimizer
+from .evolution import select_parents
 
 class DSPyOptimizer:
     """
