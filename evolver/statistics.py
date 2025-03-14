@@ -64,7 +64,7 @@ class Statistics:
         except stats.StatisticsError:
             return 0.0
     
-    def get_stats_dict(self) -> Dict[str, Any]:
+    def get_stats_dict(self, population_size: int = 0) -> Dict[str, Any]:
         # Get statistics as dictionary
         return {
             "mean": self.get_mean(),
@@ -73,14 +73,16 @@ class Statistics:
             "best": max(self.scores) if self.scores else 0.0,
             "worst": min(self.scores) if self.scores else 0.0,
             "total_evaluations": self.total_evaluations,
-            "elapsed_time": time.time() - self.start_time
+            "elapsed_time": time.time() - self.start_time,
+            "population_size": population_size
         }
     
-    def print_stats(self, verbose: bool = False) -> None:
+    def print_stats(self, verbose: bool = False, population_size: int = 0) -> None:
         # Print current statistics
-        stats_dict = self.get_stats_dict()
+        stats_dict = self.get_stats_dict(population_size)
         
         print("\n--- Population Statistics ---")
+        print(f"Population size: {stats_dict['population_size']}")
         print(f"Total evaluations: {stats_dict['total_evaluations']}")
         print(f"Elapsed time: {stats_dict['elapsed_time']:.2f} seconds")
         print(f"Mean score: {stats_dict['mean']:.4f}")
@@ -94,10 +96,30 @@ class Statistics:
             print("\n--- Recent Mating Events ---")
             for i, event in enumerate(list(self.mating_history)[-5:]):
                 print(f"{i+1}. Parents: {event['parent1_score']:.4f} + {event['parent2_score']:.4f} → Offspring: {event['offspring_score']:.4f}")
+                
+            # Show chromosomes of the most recent mating event if available
+            if self.mating_history:
+                latest = list(self.mating_history)[-1]
+                parent1_id = latest['parent1']
+                parent2_id = latest['parent2']
+                offspring_id = latest['offspring']
+                
+                # Find the agents by ID
+                parent1 = self.best_agent if self.best_agent and self.best_agent.id == parent1_id else None
+                parent2 = self.best_agent if self.best_agent and self.best_agent.id == parent2_id else None
+                
+                if parent1 or parent2:
+                    print("\n--- Chromosome Details (Most Recent Mating) ---")
+                    if parent1:
+                        print(f"Parent 1 Task (excerpt): {parent1.chromosomes['task'][:50]}...")
+                        print(f"Parent 1 Merging (excerpt): {parent1.chromosomes['merging'][:50]}...")
+                    if parent2:
+                        print(f"Parent 2 Task (excerpt): {parent2.chromosomes['task'][:50]}...")
+                        print(f"Parent 2 Merging (excerpt): {parent2.chromosomes['merging'][:50]}...")
     
-    def print_detailed_stats(self) -> None:
+    def print_detailed_stats(self, population_size: int = 0) -> None:
         # Print detailed statistics (for exit)
-        self.print_stats(verbose=True)
+        self.print_stats(verbose=True, population_size=population_size)
         
         print("\n--- Best Agent Details ---")
         if self.best_agent:
@@ -105,3 +127,4 @@ class Statistics:
             print(f"Score: {self.best_agent.score:.4f}")
             print(f"Task chromosome length: {len(self.best_agent.chromosomes['task'])}")
             print(f"Task chromosome: {self.best_agent.chromosomes['task'][:100]}...")
+            print(f"Merging chromosome: {self.best_agent.chromosomes['merging'][:100]}...")

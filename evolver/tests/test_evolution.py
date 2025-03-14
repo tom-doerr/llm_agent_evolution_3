@@ -72,7 +72,7 @@ def test_create_offspring():
     parent1 = Agent(task_chromosome="Hello, world!", merging_chromosome="Merge 1")
     parent2 = Agent(task_chromosome="Testing, 123!", merging_chromosome="Merge 2")
     
-    # Create offspring
+    # Create offspring without LLM
     offspring = create_offspring(parent1, parent2)
     
     # Check if offspring has chromosomes
@@ -82,6 +82,17 @@ def test_create_offspring():
     # Chromosomes should not be empty
     assert offspring.chromosomes["task"]
     assert offspring.chromosomes["merging"]
+    
+    # Test with mock LLM
+    from unittest.mock import MagicMock
+    mock_llm = MagicMock()
+    mock_llm.combine_chromosomes_with_llm.return_value = "LLM combined result"
+    
+    offspring_with_llm = create_offspring(parent1, parent2, mock_llm)
+    
+    # Check if LLM was used
+    assert mock_llm.combine_chromosomes_with_llm.called
+    assert offspring_with_llm.chromosomes["task"] == "LLM combined result"
 
 def test_find_hotspots_debug():
     # Debug test to verify character positions

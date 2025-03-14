@@ -49,7 +49,7 @@ class EvolutionaryOptimizer:
         # Create and evaluate a new agent from parents
         parent1, parent2 = parents
         
-        # Create offspring
+        # Create offspring using LLM for combination
         offspring = create_offspring(parent1, parent2, self.llm)
         
         # Evaluate offspring
@@ -64,10 +64,22 @@ class EvolutionaryOptimizer:
         
         if self.verbose:
             print(f"New agent: {offspring}, Parents: {parent1.score:.4f} + {parent2.score:.4f}")
+            print(f"Task excerpt: {offspring.chromosomes['task'][:30]}...")
         
         return offspring
     
     def run(self):
+        # Check for input from stdin if available
+        if not sys.stdin.isatty():
+            stdin_input = sys.stdin.read().strip()
+            if stdin_input:
+                # Create an agent from stdin input
+                agent = Agent(task_chromosome=stdin_input)
+                agent.score = self.evaluate_agent(agent)
+                self.population.add_agent(agent)
+                self.statistics.update(agent)
+                print(f"Created agent from stdin with score: {agent.score:.4f}")
+        
         # Initialize population with a few random agents if empty
         if len(self.population) == 0:
             for _ in range(10):
@@ -121,14 +133,14 @@ class EvolutionaryOptimizer:
                 
                 # Print statistics periodically
                 if iteration % stats_interval == 0:
-                    self.statistics.print_stats(verbose=self.verbose)
+                    self.statistics.print_stats(verbose=self.verbose, population_size=len(self.population))
                 
                 # Small delay to prevent CPU hogging
                 time.sleep(0.01)
         
         # Print final statistics
         print("\n=== Final Statistics ===")
-        self.statistics.print_detailed_stats()
+        self.statistics.print_detailed_stats(population_size=len(self.population))
         
         # Save best agent if specified
         if self.args.get("save"):

@@ -143,11 +143,26 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
     # Create new agent from parent chromosomes
     new_agent = Agent()
     
-    # Combine chromosomes
-    for chromosome_name in ["task", "merging"]:
-        new_agent.chromosomes[chromosome_name] = combine_chromosomes(
-            parent1, parent2, chromosome_name
+    # Use LLM-based combination if available
+    if llm_interface and parent1.chromosomes.get("merging") and parent2.chromosomes.get("task") and parent1.chromosomes.get("task"):
+        # Combine merging chromosomes using standard method
+        merging_instruction = combine_chromosomes(parent1, parent2, "merging")
+        new_agent.chromosomes["merging"] = merging_instruction
+        
+        # Use LLM to combine task chromosomes based on merging instructions
+        from .constants import TEST_TOKEN_LIMIT
+        new_agent.chromosomes["task"] = llm_interface.combine_chromosomes_with_llm(
+            parent1.chromosomes["task"],
+            parent2.chromosomes["task"],
+            merging_instruction,
+            max_tokens=TEST_TOKEN_LIMIT
         )
+    else:
+        # Fallback to standard combination if LLM not available
+        for chromosome_name in ["task", "merging"]:
+            new_agent.chromosomes[chromosome_name] = combine_chromosomes(
+                parent1, parent2, chromosome_name
+            )
     
     return new_agent
 
