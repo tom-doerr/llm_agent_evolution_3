@@ -3,8 +3,6 @@
 Example script to run the evolutionary optimizer on the counting task.
 """
 
-import os
-import sys
 import time
 
 # Import evolver modules

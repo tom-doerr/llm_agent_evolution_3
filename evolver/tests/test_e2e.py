@@ -59,9 +59,13 @@ def test_simple_optimization():
     optimizer = EvolutionaryOptimizer(args)
     optimizer.running = True
     
-    # Create initial population with only low-scoring agents
+    # Create initial population with some agents containing 'a's
     for i in range(5):
-        agent = Agent(task_chromosome="x" * (i + 1))  # Use 'x' to ensure low initial scores
+        # Mix of agents with 'x' and 'a' to ensure some have 'a's
+        if i % 2 == 0:
+            agent = Agent(task_chromosome="x" * (i + 1))
+        else:
+            agent = Agent(task_chromosome="a" * (i + 1))
         agent.score = optimizer.evaluate_agent(agent)
         optimizer.population.add_agent(agent)
         optimizer.statistics.update(agent)

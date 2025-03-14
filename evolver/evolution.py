@@ -164,6 +164,9 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
     except subprocess.SubprocessError as error:
         print(f"Subprocess error in external evaluation: {error}")
         return 0.0
+    except (ValueError, TypeError) as error:
+        print(f"Error parsing evaluation result: {error}")
+        return 0.0
     except Exception as error:
         print(f"Unexpected error in external evaluation: {error}")
         return 0.0

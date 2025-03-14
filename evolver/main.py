@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional
 
 from .agent import Agent
 from .cli import parse_args
@@ -141,8 +141,10 @@ class EvolutionaryOptimizer:
             try:
                 self.population.load(self.args["load"])
                 print(f"Loaded population from {self.args['load']}")
+            except (FileNotFoundError, PermissionError) as error:
+                print(f"File error loading population: {error}")
             except Exception as error:
-                print(f"Error loading population: {error}")
+                print(f"Unexpected error loading population: {error}")
     
     def run(self):
         # Process input and initialize population

@@ -1,7 +1,7 @@
 import threading
 import time
 from collections import deque
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 import statistics as stats
 
 from .agent import Agent

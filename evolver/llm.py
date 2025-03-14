@@ -46,6 +46,9 @@ class LLMInterface:
                     print(f"Error generating from LLM after {max_retries} attempts: {error}")
                     # Re-raise the exception to allow proper error handling
                     raise
+            except (ValueError, TypeError) as error:
+                print(f"Error in LLM generation: {error}")
+                raise
             except Exception as error:
                 print(f"Unexpected error in LLM generation: {error}")
                 raise
