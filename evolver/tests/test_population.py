@@ -1,6 +1,5 @@
 import os
 import tempfile
-import pytest
 from evolver.agent import Agent
 from evolver.population import Population
 

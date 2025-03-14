@@ -1,6 +1,7 @@
 import threading
-import toml
 from typing import List, Optional
+
+import toml
 
 from .agent import Agent
 from .constants import MAX_POPULATION_SIZE

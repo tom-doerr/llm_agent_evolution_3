@@ -9,6 +9,7 @@ from .agent import Agent
 from .cli import parse_args
 from .constants import DEFAULT_PARALLEL_AGENTS
 from .evolution import select_parents, create_offspring, external_command_evaluation
+from .utils import create_parent_pairs
 from .llm import LLMInterface
 from .population import Population
 from .statistics import Statistics
@@ -73,13 +74,6 @@ class EvolutionaryOptimizer:
         
         return offspring
     
-    def _create_parent_pairs(self, parents: List[Agent]) -> List[Tuple[Agent, Agent]]:
-        """Create pairs of parents for mating."""
-        parent_pairs = []
-        for i in range(0, len(parents), 2):
-            if i+1 < len(parents):
-                parent_pairs.append((parents[i], parents[i+1]))
-        return parent_pairs
     
     def run_iteration(self):
         """Run a single iteration of the evolutionary algorithm."""
@@ -88,7 +82,7 @@ class EvolutionaryOptimizer:
         parents = select_parents(self.population.agents, num_pairs * 2)
         
         # Create parent pairs
-        parent_pairs = self._create_parent_pairs(parents)
+        parent_pairs = create_parent_pairs(parents)
         
         # Process pairs
         with ThreadPoolExecutor(max_workers=self.num_parallel) as executor:
@@ -107,8 +101,10 @@ class EvolutionaryOptimizer:
                     new_agent = future.result()
                     if new_agent:
                         self.population.add_agent(new_agent)
-                except Exception as e:
-                    print(f"Error processing offspring: {e}")
+                except (ValueError, TypeError, RuntimeError) as error:
+                    print(f"Error processing offspring: {error}")
+                except Exception as error:
+                    print(f"Unexpected error processing offspring: {error}")
     
     def _initialize_population(self):
         # Initialize population with a few random agents if empty

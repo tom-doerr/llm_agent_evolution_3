@@ -1,7 +1,8 @@
 import random
 import threading
+from typing import List, TypeVar, Dict, Any, Tuple
+
 import toml
-from typing import List, TypeVar, Dict, Any
 
 T = TypeVar('T')
 
@@ -72,6 +73,14 @@ def prepare_weights(scores: List[float]) -> List[float]:
 
     # Calculate weights as score^2 (Pareto distribution)
     return [score * score for score in adjusted_scores]
+
+def create_parent_pairs(parents: List[T]) -> List[Tuple[T, T]]:
+    """Create pairs of parents for mating."""
+    parent_pairs = []
+    for i in range(0, len(parents), 2):
+        if i+1 < len(parents):
+            parent_pairs.append((parents[i], parents[i+1]))
+    return parent_pairs
 
 def save_to_toml(data: Dict[str, Any], filename: str) -> None:
     # Save data to TOML file

@@ -31,6 +31,10 @@ def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
     mock_optimizer = MagicMock()
     mock_evolutionary_optimizer.return_value = mock_optimizer
     
+    # Mock population and statistics
+    mock_optimizer.population = MagicMock()
+    mock_optimizer.statistics = MagicMock()
+    
     # Mock best agent
     mock_best_agent = MagicMock()
     mock_best_agent.chromosomes = {"task": "optimized prompt"}

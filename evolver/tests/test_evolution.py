@@ -1,4 +1,3 @@
-import pytest
 from evolver.agent import Agent
 from evolver.evolution import (
     select_parents,
@@ -45,8 +44,10 @@ def test_find_hotspots():
     # Should include positions of punctuation
     assert 5 in hotspots  # Position of comma
     assert 12 in hotspots  # Position of exclamation mark
-    assert text[27] == "."  # Verify the position of the period
-    assert 27 in hotspots  # Position of period
+    
+    # Verify the position of the period
+    period_pos = text.find(".")
+    assert period_pos in hotspots
 
 def test_combine_chromosomes():
     # Create test agents

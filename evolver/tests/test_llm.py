@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock
 from evolver.llm import LLMInterface
 
 def test_llm_initialization():
@@ -8,17 +9,17 @@ def test_llm_initialization():
     assert llm.model_name == "test-model"
     assert llm.lm is None
 
-@pytest.mark.parametrize("mock_lm", [MagicMock()])
-def test_llm_initialize(mock_lm):
+@patch('dspy.LM')
+def test_llm_initialize(mock_lm_class):
     # Test initialize method
     llm = LLMInterface(model_name="test-model")
     llm.initialize()
     
     # Check if LM was created with correct model name
-    mock_lm.assert_called_once_with("test-model")
+    mock_lm_class.assert_called_once_with("test-model")
     assert llm.lm is not None
 
-@pytest.mark.parametrize("mock_lm_class", [MagicMock()])
+@patch('dspy.LM')
 def test_llm_generate(mock_lm_class):
     # Create mock LM
     mock_lm = MagicMock()
@@ -35,7 +36,7 @@ def test_llm_generate(mock_lm_class):
     mock_lm.assert_called_once_with("Test prompt", max_tokens=10)
     assert result == "Generated text"
 
-@pytest.mark.parametrize("mock_lm_class", [MagicMock()])
+@patch('dspy.LM')
 def test_llm_generate_error(mock_lm_class):
     # Create mock LM that raises an exception
     mock_lm = MagicMock()

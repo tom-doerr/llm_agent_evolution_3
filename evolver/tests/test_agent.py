@@ -7,12 +7,16 @@ def test_agent_initialization():
     assert agent.chromosomes["merging"] == ""
     assert agent.score == 0.0
     assert agent.id is not None
+    assert isinstance(agent.id, str)
+    assert len(agent.id) > 0
+    assert agent.creation_timestamp > 0
     
     # Test initialization with values
     agent = Agent(task_chromosome="test task", merging_chromosome="test merging", score=0.5)
     assert agent.chromosomes["task"] == "test task"
     assert agent.chromosomes["merging"] == "test merging"
     assert agent.score == 0.5
+    assert isinstance(agent.score, float)
 
 def test_agent_serialization():
     # Test to_dict and from_dict

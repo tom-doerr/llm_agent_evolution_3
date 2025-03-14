@@ -61,16 +61,30 @@ def test_simple_optimization():
     
     # Create initial population and run optimization
     optimizer = create_initial_population(optimizer)
+    
+    # Record initial statistics
+    initial_best = optimizer.statistics.best_agent.score if optimizer.statistics.best_agent else 0
+    initial_mean = optimizer.statistics.get_mean()
+    
+    # Run optimization
     optimizer = run_optimization_iterations(optimizer)
     
     # Check if optimization improved scores
-    initial_best = optimizer.population.agents[0].score
     final_best = optimizer.statistics.best_agent.score if optimizer.statistics.best_agent else 0
+    final_mean = optimizer.statistics.get_mean()
     
     # The final best score should be at least as good as the initial best
-    assert final_best >= initial_best
+    assert final_best >= initial_best, "Final best score should be at least as good as initial best"
+    
+    # The mean score should improve or stay the same
+    assert final_mean >= initial_mean, "Final mean score should be at least as good as initial mean"
+    
+    # Check that the best agent has a reasonable chromosome
+    best_agent = optimizer.statistics.best_agent
+    assert best_agent is not None, "Should have a best agent"
+    assert "a" in best_agent.chromosomes["task"], "Best agent should have 'a's in its chromosome"
     
     # Print statistics for debugging
-    print(f"Initial best score: {initial_best}")
-    print(f"Final best score: {final_best}")
-    print(f"Best agent task: {optimizer.statistics.best_agent.chromosomes['task']}")
+    print(f"Initial best score: {initial_best}, mean: {initial_mean}")
+    print(f"Final best score: {final_best}, mean: {final_mean}")
+    print(f"Best agent task: {best_agent.chromosomes['task']}")

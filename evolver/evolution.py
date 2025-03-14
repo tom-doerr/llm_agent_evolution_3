@@ -4,17 +4,9 @@ from typing import List, Tuple, Optional, TypeVar
 
 from .agent import Agent
 from .constants import MAX_CHROMOSOME_LENGTH
-from .utils import weighted_sample, prepare_weights
+from .utils import weighted_sample, prepare_weights, create_parent_pairs
 
 T = TypeVar('T')
-
-def create_parent_pairs(parents: List[T]) -> List[Tuple[T, T]]:
-    """Create pairs of parents for mating."""
-    parent_pairs = []
-    for i in range(0, len(parents), 2):
-        if i+1 < len(parents):
-            parent_pairs.append((parents[i], parents[i+1]))
-    return parent_pairs
 
 
 def select_parents(population: List[Agent], num_parents: int) -> List[Agent]:
