@@ -38,7 +38,9 @@ class Population:
             if not weights:
                 weights = prepare_weights([agent.score for agent in self.agents])
             
-            return weighted_sample(self.agents, weights, num_candidates)
+            # Ensure we don't try to sample more agents than available
+            num_to_sample = min(num_candidates, len(self.agents))
+            return weighted_sample(self.agents, weights, num_to_sample)
     
     def prune(self) -> None:
         # Remove worst agents when population exceeds limit (thread-safe)
