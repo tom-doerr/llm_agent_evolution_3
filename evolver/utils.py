@@ -1,21 +1,15 @@
 import random
 import toml
+import threading
 from typing import List, TypeVar, Dict, Any
 
 T = TypeVar('T')
 
+# Thread-local storage for thread safety
+thread_local = threading.local()
+
 def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]:
-    """
-    Perform weighted sampling without replacement.
-    
-    Args:
-        items: List of items to sample from
-        weights: List of weights corresponding to items
-        k: Number of items to sample
-        
-    Returns:
-        List of sampled items
-    """
+    # Perform weighted sampling without replacement
     if not items or not weights or k <= 0:
         return []
     
@@ -56,26 +50,35 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
     
     return result
 
-def save_to_toml(data: Dict[str, Any], filename: str) -> None:
-    """
-    Save data to TOML file.
+def prepare_weights(scores: List[float]) -> List[float]:
+    # Prepare weights for selection (used by both parent selection and candidate selection)
+    # Ensure all scores are positive
+    min_score = min(scores) if scores else 0
+    if min_score < 0:
+        # Adjust scores to make them positive
+        adjusted_scores = [score - min_score + 1 for score in scores]
+        
+        # Normalize so the highest adjusted score is 1.0
+        max_adjusted = max(adjusted_scores)
+        adjusted_scores = [score / max_adjusted for score in adjusted_scores]
+    else:
+        adjusted_scores = [max(score, 0.0001) for score in scores]
     
-    Args:
-        data: Dictionary to save
-        filename: Path to save file
-    """
+    # Calculate weights as score^2 (Pareto distribution)
+    return [score * score for score in adjusted_scores]
+
+def save_to_toml(data: Dict[str, Any], filename: str) -> None:
+    # Save data to TOML file
     with open(filename, 'w') as f:
         toml.dump(data, f)
 
 def load_from_toml(filename: str) -> Dict[str, Any]:
-    """
-    Load data from TOML file.
-    
-    Args:
-        filename: Path to load file
-        
-    Returns:
-        Dictionary with loaded data
-    """
+    # Load data from TOML file
     with open(filename, 'r') as f:
         return toml.load(f)
+
+def get_thread_rng():
+    # Get a thread-local random number generator for thread safety
+    if not hasattr(thread_local, 'rng'):
+        thread_local.rng = random.Random()
+    return thread_local.rng

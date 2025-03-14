@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.8"
 dspy-ai = "^2.0.0"
 toml = "^0.10.2"
+rich = "^13.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"

@@ -8,9 +8,11 @@ An evolutionary algorithm system with LLM-based components.
 - Parent selection using Pareto distribution
 - Chromosome combination with hotspot-based crossover
 - Statistics tracking with sliding window
-- Multithreading support
+- Multithreading support with thread safety
 - Save/load functionality with TOML
 - External command evaluation support
+- Rich tables for detailed statistics
+- DSPy optimizer interface
 
 ## Installation
 
@@ -34,6 +36,53 @@ python -m evolver.main --eval-command "python evaluate.py"
 # Save and load population
 python -m evolver.main --save population.toml
 python -m evolver.main --load population.toml
+
+# Pipe input to the agent
+echo "initial chromosome" | python -m evolver.main
+```
+
+## Using as a DSPy Optimizer
+
+```python
+import dspy
+from evolver.dspy_optimizer import DSPyOptimizer
+
+# Create a DSPy module
+class MyModule(dspy.Module):
+    def __init__(self):
+        super().__init__()
+        self.prompt = ""
+    
+    def forward(self, input_text):
+        # Use the prompt
+        return input_text + self.prompt
+
+# Create optimizer
+optimizer = DSPyOptimizer(
+    max_agents=1000,
+    parallel=10,
+    verbose=True
+)
+
+# Define evaluation metric
+def metric(result, example):
+    # Calculate score
+    return len(result)
+
+# Create training data
+trainset = ["example1", "example2", "example3"]
+
+# Optimize module
+module = MyModule()
+optimized_module = optimizer.optimize(
+    module=module,
+    metric=metric,
+    trainset=trainset,
+    max_evaluations=100
+)
+
+# Use optimized module
+result = optimized_module("test")
 ```
 
 ## Development

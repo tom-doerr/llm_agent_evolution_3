@@ -79,9 +79,11 @@ def find_hotspots(text: str) -> List[int]:
             hotspots.append(i)
     
     # Add some space positions with a certain probability
+    from .utils import get_thread_rng
+    rng = get_thread_rng()
     space_hotspot_probability = 0.3
     for i, char in enumerate(text):
-        if char == ' ' and random.random() < space_hotspot_probability:
+        if char == ' ' and rng.random() < space_hotspot_probability:
             hotspots.append(i)
     
     return sorted(hotspots)
@@ -103,7 +105,9 @@ def combine_chromosomes(parent1: Agent, parent2: Agent, chromosome_name: str) ->
     # If no hotspots found, create some arbitrary ones
     if not hotspots:
         # Create crossover points roughly every 5-10 characters
-        avg_segment_length = random.randint(5, 10)
+        from .utils import get_thread_rng
+        rng = get_thread_rng()
+        avg_segment_length = rng.randint(5, 10)
         for i in range(avg_segment_length, len(chromosome1), avg_segment_length):
             if i < len(chromosome1):
                 hotspots.append(i)
@@ -116,8 +120,11 @@ def combine_chromosomes(parent1: Agent, parent2: Agent, chromosome_name: str) ->
     current_parent = 1  # Start with parent1
     last_pos = 0
     
+    from .utils import get_thread_rng
+    rng = get_thread_rng()
+    
     for pos in hotspots:
-        if random.random() < crossover_probability:
+        if rng.random() < crossover_probability:
             # Switch parents at this hotspot
             if current_parent == 1:
                 result += chromosome1[last_pos:pos]
@@ -143,12 +150,12 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
     # Create new agent from parent chromosomes
     new_agent = Agent()
     
+    # Always combine merging chromosomes using standard method
+    merging_instruction = combine_chromosomes(parent1, parent2, "merging")
+    new_agent.chromosomes["merging"] = merging_instruction
+    
     # Use LLM-based combination if available
-    if llm_interface and parent1.chromosomes.get("merging") and parent2.chromosomes.get("task") and parent1.chromosomes.get("task"):
-        # Combine merging chromosomes using standard method
-        merging_instruction = combine_chromosomes(parent1, parent2, "merging")
-        new_agent.chromosomes["merging"] = merging_instruction
-        
+    if llm_interface and parent1.chromosomes.get("task") and parent2.chromosomes.get("task"):
         # Use LLM to combine task chromosomes based on merging instructions
         from .constants import TEST_TOKEN_LIMIT
         new_agent.chromosomes["task"] = llm_interface.combine_chromosomes_with_llm(
@@ -159,10 +166,7 @@ def create_offspring(parent1: Agent, parent2: Agent, llm_interface=None) -> Agen
         )
     else:
         # Fallback to standard combination if LLM not available
-        for chromosome_name in ["task", "merging"]:
-            new_agent.chromosomes[chromosome_name] = combine_chromosomes(
-                parent1, parent2, chromosome_name
-            )
+        new_agent.chromosomes["task"] = combine_chromosomes(parent1, parent2, "task")
     
     return new_agent
 

@@ -24,14 +24,19 @@ class EvolutionaryOptimizer:
         self.running = True
         self.eval_command = args.get("eval_command", "")
         self.num_parallel = args.get("parallel", DEFAULT_PARALLEL_AGENTS)
+        self._shutdown_lock = threading.Lock()
         
         # Set up signal handler for graceful exit
         signal.signal(signal.SIGINT, self.handle_interrupt)
     
     def handle_interrupt(self, sig, frame):
-        # Handle Ctrl+C for graceful shutdown
-        print("\n\nShutting down gracefully. Please wait...")
-        self.running = False
+        # Handle Ctrl+C for graceful shutdown (thread-safe)
+        with self._shutdown_lock:
+            if self.running:
+                print("\n\nShutting down gracefully. Please wait...")
+                self.running = False
+                # Print detailed statistics on exit
+                self.statistics.print_detailed_stats(population_size=len(self.population))
     
     def evaluate_agent(self, agent: Agent) -> float:
         # Evaluate agent using external command or test function
