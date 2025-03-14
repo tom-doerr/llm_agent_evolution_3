@@ -1,5 +1,5 @@
-from unittest.mock import MagicMock
 import pytest
+from unittest.mock import MagicMock
 from evolver.llm import LLMInterface
 
 def test_llm_initialization():

@@ -1,36 +1,20 @@
 import pytest
 from evolver.agent import Agent
-from evolver.evolution import select_parents, create_offspring, create_parent_pairs
-from evolver.main import EvolutionaryOptimizer
 from evolver.constants import TEST_OPTIMAL_LENGTH
+from evolver.evolution import select_parents, create_parent_pairs
+from evolver.main import EvolutionaryOptimizer
 
-def test_simple_optimization():
-    """
-    End-to-end test with a simple optimization goal:
-    Maximize the number of 'a's up to TEST_OPTIMAL_LENGTH characters.
-    """
-    # Create arguments
-    args = {
-        "parallel": 2,  # Use fewer threads for testing
-        "max_agents": 20,  # Small population for testing
-        "verbose": False
-    }
-    
-    # Create optimizer
-    optimizer = EvolutionaryOptimizer(args)
-    
-    # Override running flag to limit iterations
-    optimizer.running = True
-    
-    # Create initial population with random agents
-    for _ in range(5):
-        agent = Agent(task_chromosome="a" * (_ % 3 + 1))
+def create_initial_population(optimizer, size=5):
+    """Helper function to create initial population for testing."""
+    for i in range(size):
+        agent = Agent(task_chromosome="a" * ((i % 3) + 1))
         agent.score = optimizer.evaluate_agent(agent)
         optimizer.population.add_agent(agent)
         optimizer.statistics.update(agent)
-    
-    # Run a few iterations
-    max_iterations = 10
+    return optimizer
+
+def run_optimization_iterations(optimizer, max_iterations=10):
+    """Helper function to run optimization iterations."""
     iteration = 0
     
     with pytest.raises(StopIteration):  # Just to break out of the loop
@@ -56,6 +40,28 @@ def test_simple_optimization():
                 
         if iteration >= max_iterations:
             raise StopIteration()
+    
+    return optimizer
+
+def test_simple_optimization():
+    """
+    End-to-end test with a simple optimization goal:
+    Maximize the number of 'a's up to TEST_OPTIMAL_LENGTH characters.
+    """
+    # Create arguments
+    args = {
+        "parallel": 2,  # Use fewer threads for testing
+        "max_agents": 20,  # Small population for testing
+        "verbose": False
+    }
+    
+    # Create optimizer
+    optimizer = EvolutionaryOptimizer(args)
+    optimizer.running = True
+    
+    # Create initial population and run optimization
+    optimizer = create_initial_population(optimizer)
+    optimizer = run_optimization_iterations(optimizer)
     
     # Check if optimization improved scores
     initial_best = optimizer.population.agents[0].score

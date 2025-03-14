@@ -3,7 +3,7 @@ import dspy
 from evolver.dspy_optimizer import DSPyOptimizer
 
 # Create a simple DSPy module for testing
-class TestModule(dspy.Module):
+class SimpleTestModule(dspy.Module):
     def __init__(self):
         super().__init__()
         self.prompt = ""
@@ -38,7 +38,7 @@ def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
     
     # Create optimizer and test module
     optimizer = DSPyOptimizer(max_agents=100, parallel=5)
-    module = TestModule()
+    module = SimpleTestModule()
     
     # Define simple metric and dataset
     def metric(result, _):
@@ -63,5 +63,5 @@ def test_dspy_optimizer_optimize(mock_evolutionary_optimizer):
     # Check if the prompt was updated
     assert optimized_module.prompt == "optimized prompt"
     
-    # Check if the optimized module is a TestModule
-    assert isinstance(optimized_module, TestModule)
+    # Check if the optimized module is a SimpleTestModule
+    assert isinstance(optimized_module, SimpleTestModule)

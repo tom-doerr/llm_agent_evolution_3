@@ -1,6 +1,10 @@
 import string
 import subprocess
-from typing import List, Tuple, Optional, Callable, TypeVar
+from typing import List, Tuple, Optional, TypeVar
+
+from .agent import Agent
+from .constants import MAX_CHROMOSOME_LENGTH
+from .utils import weighted_sample, prepare_weights
 
 T = TypeVar('T')
 
@@ -11,11 +15,6 @@ def create_parent_pairs(parents: List[T]) -> List[Tuple[T, T]]:
         if i+1 < len(parents):
             parent_pairs.append((parents[i], parents[i+1]))
     return parent_pairs
-import math
-
-from .agent import Agent
-from .constants import MAX_CHROMOSOME_LENGTH
-from .utils import weighted_sample, prepare_weights
 
 
 def select_parents(population: List[Agent], num_parents: int) -> List[Agent]:
@@ -161,7 +160,7 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
             text=True
         )
         
-        stdout, stderr = process.communicate(input=agent_output)
+        stdout, _ = process.communicate(input=agent_output)
         
         # Extract score from the last line of output
         lines = stdout.strip().split('\n')
@@ -174,6 +173,6 @@ def external_command_evaluation(agent: Agent, command: str) -> float:
                 return 0.0
         
         return 0.0
-    except Exception as e:
-        print(f"Error in external evaluation: {e}")
+    except Exception as error:
+        print(f"Error in external evaluation: {error}")
         return 0.0

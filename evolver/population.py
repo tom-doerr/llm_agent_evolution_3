@@ -1,6 +1,7 @@
 import threading
-from typing import List, Optional
 import toml
+from typing import List, Optional
+
 from .agent import Agent
 from .constants import MAX_POPULATION_SIZE
 from .utils import weighted_sample, prepare_weights
@@ -30,13 +31,13 @@ class Population:
             sorted_agents = sorted(self.agents, key=lambda a: a.score, reverse=True)
             return sorted_agents[:min(n, len(sorted_agents))]
     
-    def get_candidates(self, n: int, weights: Optional[List[float]] = None) -> List[Agent]:
+    def get_candidates(self, num_candidates: int, weights: Optional[List[float]] = None) -> List[Agent]:
         # Weighted sampling without replacement (thread-safe)
         with self._lock:
             if not weights:
                 weights = prepare_weights([agent.score for agent in self.agents])
             
-            return weighted_sample(self.agents, weights, n)
+            return weighted_sample(self.agents, weights, num_candidates)
     
     def prune(self) -> None:
         # Remove worst agents when population exceeds limit (thread-safe)

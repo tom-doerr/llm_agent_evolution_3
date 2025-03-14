@@ -67,8 +67,8 @@ Input 2:
         try:
             result = self.generate(prompt, max_tokens=max_tokens)
             return result
-        except Exception as e:
-            print(f"Error in LLM combination: {e}")
+        except Exception as error:
+            print(f"Error in LLM combination: {error}")
             # In case of error, return a simple combination of the inputs
             # Make sure we include parts of both parents
             return f"{parent1_chromosome[:min(len(parent1_chromosome), 100)]} {parent2_chromosome[:min(len(parent2_chromosome), 100)]}"

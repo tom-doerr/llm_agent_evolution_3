@@ -1,15 +1,34 @@
-import threading
 import random
-from typing import List, TypeVar, Dict, Any
+import threading
 import toml
+from typing import List, TypeVar, Dict, Any
 
 T = TypeVar('T')
 
 # Thread-local storage for thread safety
 thread_local = threading.local()
 
+def _select_weighted_item(items: List[T], weights: List[float]) -> tuple[T, int]:
+    """Select a single item based on weights and return the item and its index."""
+    total_weight = sum(weights)
+    if total_weight <= 0:
+        # If all weights are zero, select randomly
+        idx = random.randrange(len(items))
+        return items[idx], idx
+    
+    # Weighted selection
+    random_val = random.uniform(0, total_weight)
+    cumulative_weight = 0
+    for i, weight in enumerate(weights):
+        cumulative_weight += weight
+        if cumulative_weight >= random_val:
+            return items[i], i
+    
+    # Fallback (should not reach here)
+    return items[-1], len(items) - 1
+
 def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]:
-    # Perform weighted sampling without replacement
+    """Perform weighted sampling without replacement."""
     if not items or not weights or k <= 0:
         return []
 
@@ -25,24 +44,11 @@ def weighted_sample(items: List[T], weights: List[float], k: int = 1) -> List[T]
         if not remaining_items:
             break
 
-        # Calculate total weight
-        total_weight = sum(remaining_weights)
-        if total_weight <= 0:
-            # If all weights are zero, select randomly
-            idx = random.randrange(len(remaining_items))
-        else:
-            # Weighted selection
-            random_val = random.uniform(0, total_weight)
-            cumulative_weight = 0
-            idx = 0
-            for i, weight in enumerate(remaining_weights):
-                cumulative_weight += weight
-                if cumulative_weight >= random_val:
-                    idx = i
-                    break
-
+        # Select an item and get its index
+        selected_item, idx = _select_weighted_item(remaining_items, remaining_weights)
+        
         # Add selected item to result
-        result.append(remaining_items[idx])
+        result.append(selected_item)
 
         # Remove selected item from remaining options
         remaining_items.pop(idx)

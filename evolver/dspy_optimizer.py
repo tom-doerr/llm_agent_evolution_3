@@ -1,5 +1,6 @@
-import dspy
 from typing import List, Tuple, Callable, Any, Optional
+import dspy
+
 from .agent import Agent
 from .main import EvolutionaryOptimizer
 
@@ -69,8 +70,8 @@ class DSPyOptimizer:
         
         optimizer = EvolutionaryOptimizer(args)
         
-        # Define evaluation function for agents
         def evaluate_module(agent: Agent) -> float:
+            """Evaluate a DSPy module using the agent's task chromosome as prompt."""
             # Apply the agent's task chromosome as the module's prompt
             optimized_module.prompt = agent.chromosomes["task"]
             
@@ -85,8 +86,8 @@ class DSPyOptimizer:
                     score = metric(result, example)
                     total_score += score
                     successful_examples += 1
-                except Exception as e:
-                    print(f"Error evaluating module: {e}")
+                except Exception as error:
+                    print(f"Error evaluating module: {error}")
                     # Continue with other examples instead of returning 0
             
             # Return average score based on successful examples

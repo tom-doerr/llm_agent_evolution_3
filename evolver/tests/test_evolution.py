@@ -45,7 +45,8 @@ def test_find_hotspots():
     # Should include positions of punctuation
     assert 5 in hotspots  # Position of comma
     assert 12 in hotspots  # Position of exclamation mark
-    assert 27 in hotspots  # Position of period (index 27)
+    assert text[27] == "."  # Verify the position of the period
+    assert 27 in hotspots  # Position of period
 
 def test_combine_chromosomes():
     # Create test agents
@@ -93,9 +94,4 @@ def test_create_offspring():
     assert mock_llm.combine_chromosomes_with_llm.called
     assert offspring_with_llm.chromosomes["task"] == "LLM combined result"
 
-def test_find_hotspots_debug():
-    # Debug test to verify character positions
-    text = "Hello, world! This is a test."
-    
-    # Verify the position of the period
-    assert text[27] == "."
+# This test is redundant with the improved test_find_hotspots above

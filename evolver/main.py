@@ -1,17 +1,17 @@
-import sys
-import time
 import signal
+import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Tuple, Optional, Dict, Any
+from typing import Dict, Any, List, Tuple, Optional
 
 from .agent import Agent
-from .population import Population
-from .evolution import select_parents, create_offspring, external_command_evaluation
-from .statistics import Statistics
-from .llm import LLMInterface
 from .cli import parse_args
-from .constants import DEFAULT_PARALLEL_AGENTS, TEST_TOKEN_LIMIT
+from .constants import DEFAULT_PARALLEL_AGENTS
+from .evolution import select_parents, create_offspring, external_command_evaluation
+from .llm import LLMInterface
+from .population import Population
+from .statistics import Statistics
 
 class EvolutionaryOptimizer:
     def __init__(self, args: Dict[str, Any]):
@@ -29,7 +29,7 @@ class EvolutionaryOptimizer:
         # Set up signal handler for graceful exit
         signal.signal(signal.SIGINT, self.handle_interrupt)
     
-    def handle_interrupt(self, sig, frame):
+    def handle_interrupt(self, *_):
         # Handle Ctrl+C for graceful shutdown (thread-safe)
         with self._shutdown_lock:
             if self.running:
@@ -42,13 +42,13 @@ class EvolutionaryOptimizer:
         # Evaluate agent using external command or test function
         if self.eval_command:
             return external_command_evaluation(agent, self.eval_command)
-        else:
-            # Default test task: reward for 'a's up to optimal length
-            from .constants import TEST_OPTIMAL_LENGTH
-            text = agent.chromosomes["task"]
-            count_a = text.count('a')
-            penalty = max(0, len(text) - TEST_OPTIMAL_LENGTH)
-            return count_a - penalty
+        
+        # Default test task: reward for 'a's up to optimal length
+        from .constants import TEST_OPTIMAL_LENGTH
+        text = agent.chromosomes["task"]
+        count_a = text.count('a')
+        penalty = max(0, len(text) - TEST_OPTIMAL_LENGTH)
+        return count_a - penalty
     
     def create_and_evaluate_offspring(self, parents: Tuple[Agent, Agent]) -> Optional[Agent]:
         # Create and evaluate a new agent from parents
@@ -110,7 +110,16 @@ class EvolutionaryOptimizer:
                 except Exception as e:
                     print(f"Error processing offspring: {e}")
     
-    def run(self):
+    def _initialize_population(self):
+        # Initialize population with a few random agents if empty
+        if len(self.population) == 0:
+            for i in range(10):
+                agent = Agent(task_chromosome="a" * ((i % 5) + 1))
+                agent.score = self.evaluate_agent(agent)
+                self.population.add_agent(agent)
+                self.statistics.update(agent)
+    
+    def _process_stdin_input(self):
         # Check for input from stdin if available
         if not sys.stdin.isatty():
             stdin_input = sys.stdin.read().strip()
@@ -121,22 +130,21 @@ class EvolutionaryOptimizer:
                 self.population.add_agent(agent)
                 self.statistics.update(agent)
                 print(f"Created agent from stdin with score: {agent.score:.4f}")
-        
-        # Initialize population with a few random agents if empty
-        if len(self.population) == 0:
-            for _ in range(10):
-                agent = Agent(task_chromosome="a" * ((_ % 5) + 1))
-                agent.score = self.evaluate_agent(agent)
-                self.population.add_agent(agent)
-                self.statistics.update(agent)
-        
+    
+    def _load_population(self):
         # Load agent if specified
         if self.args.get("load"):
             try:
                 self.population.load(self.args["load"])
                 print(f"Loaded population from {self.args['load']}")
-            except Exception as e:
-                print(f"Error loading population: {e}")
+            except Exception as error:
+                print(f"Error loading population: {error}")
+    
+    def run(self):
+        # Process input and initialize population
+        self._process_stdin_input()
+        self._initialize_population()
+        self._load_population()
         
         print(f"Starting evolution with {self.num_parallel} parallel agents")
         
@@ -169,8 +177,8 @@ class EvolutionaryOptimizer:
                     filename = self.args["save"]
                     self.population.save(filename)
                     print(f"Saved population to {filename}")
-            except Exception as e:
-                print(f"Error saving population: {e}")
+            except Exception as error:
+                print(f"Error saving population: {error}")
 
 def main():
     # Parse command line arguments

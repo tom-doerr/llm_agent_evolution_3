@@ -1,8 +1,11 @@
-import statistics as stats
-import time
 import threading
+import time
 from collections import deque
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+import statistics as stats
+
+from .agent import Agent
+from .constants import STATS_WINDOW_SIZE
 
 # Try to import Rich components
 try:
@@ -12,9 +15,6 @@ try:
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
-
-from .agent import Agent
-from .constants import STATS_WINDOW_SIZE
 
 class Statistics:
     def __init__(self, window_size: int = STATS_WINDOW_SIZE):
@@ -236,36 +236,45 @@ class Statistics:
         else:
             self._print_detailed_stats_plain()
     
+    def _print_best_agent_details_rich(self, console: 'Console') -> None:
+        # Print detailed best agent info with Rich
+        if not self.best_agent:
+            return
+            
+        best_table = Table(title="Best Agent Details")
+        best_table.add_column("Property", style="cyan")
+        best_table.add_column("Value", style="green")
+        
+        best_table.add_row("ID", self.best_agent.id)
+        best_table.add_row("Score", f"{self.best_agent.score:.4f}")
+        best_table.add_row("Task chromosome length", str(len(self.best_agent.chromosomes['task'])))
+        
+        console.print(best_table)
+    
+    def _print_chromosomes_rich(self, console: 'Console') -> None:
+        # Print chromosomes in panels with Rich
+        if not self.best_agent:
+            return
+            
+        console.print(Panel(
+            self.best_agent.chromosomes['task'][:500] + 
+            ("..." if len(self.best_agent.chromosomes['task']) > 500 else ""),
+            title="Task Chromosome",
+            border_style="green"
+        ))
+        
+        console.print(Panel(
+            self.best_agent.chromosomes['merging'][:500] + 
+            ("..." if len(self.best_agent.chromosomes['merging']) > 500 else ""),
+            title="Merging Chromosome",
+            border_style="yellow"
+        ))
+    
     def _print_detailed_stats_rich(self) -> None:
         # Print detailed stats with Rich
         console = Console()
-        
-        # Print detailed best agent info
-        if self.best_agent:
-            best_table = Table(title="Best Agent Details")
-            best_table.add_column("Property", style="cyan")
-            best_table.add_column("Value", style="green")
-            
-            best_table.add_row("ID", self.best_agent.id)
-            best_table.add_row("Score", f"{self.best_agent.score:.4f}")
-            best_table.add_row("Task chromosome length", str(len(self.best_agent.chromosomes['task'])))
-            
-            console.print(best_table)
-            
-            # Print chromosomes in panels
-            console.print(Panel(
-                self.best_agent.chromosomes['task'][:500] + 
-                ("..." if len(self.best_agent.chromosomes['task']) > 500 else ""),
-                title="Task Chromosome",
-                border_style="green"
-            ))
-            
-            console.print(Panel(
-                self.best_agent.chromosomes['merging'][:500] + 
-                ("..." if len(self.best_agent.chromosomes['merging']) > 500 else ""),
-                title="Merging Chromosome",
-                border_style="yellow"
-            ))
+        self._print_best_agent_details_rich(console)
+        self._print_chromosomes_rich(console)
     
     def _print_detailed_stats_plain(self) -> None:
         # Print detailed stats in plain text
