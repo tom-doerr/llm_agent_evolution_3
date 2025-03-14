@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "evolver"
+version = "0.1.0"
+description = "Evolutionary algorithm with LLM-based components"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+dspy-ai = "^2.0.0"
+toml = "^0.10.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+
+[tool.poetry.scripts]
+evolver = "evolver.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
